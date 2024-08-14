@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Image, TouchableOpacity, StyleSheet } from 'react-native';
 
 const CustomImageButton = ({ imageSource, onPress }) => {
-  const touchableSize = 70;
+  const touchableSize = 45;
 
   return (
     <View style={styles.container}>

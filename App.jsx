@@ -5,53 +5,52 @@ import { Text, View, Button,  Modal, Pressable, StyleSheet  } from 'react-native
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import HomeScreen from './page1';
+import SecondScreen from './page2';
 import AddTask from './components/addTask';
+import { Provider } from 'react-redux';
+import { Store } from './redux/store';
+import { RealmProvider } from './RealmProvider';
+import PushNotification from "react-native-push-notification";
+import  { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { setTestFunction } from './redux/actions';
 
-function SettingsScreen({ navigation }) {
-  const [showModal, setShowModal] = useState(false);
 
-  const handleCloseModal = () => setShowModal(false);
 
-  const styles = StyleSheet.create({
-    modalContainer: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      backgroundColor: 'rgba(0, 0, 0, 0.5)', // Translucent grey background
-    },
-    overlay: {
-      flex: 1,
-    },
+// Must be outside of any component LifeCycle (such as `componentDidMount`).
+PushNotification.configure({
+  // (optional) Called when Token is generated (iOS and Android)
+  onRegister: function (token) {
+    console.log("TOKEN:", token);
+  },
+
+  // (required) Called when a remote is received or opened, or local notification is opened
+  onNotification: function (notification) {
+    console.log("NOTIFICATION:", notification);
+  }
+
+});
+
+const test = (title, message) => {
+  PushNotification.localNotification({
+    title: title,
+    message: message,
+    channelId: "your-channel-id",
   });
+};
 
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Settings!</Text>
-      <Button title="Open Add Task" onPress={() => setShowModal(true)} />
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={showModal}
-        onRequestClose={handleCloseModal}
-      >
-        <Pressable style={styles.overlay} onPress={handleCloseModal}>
-          <View style={styles.modalContainer}>
-            <AddTask />
-          </View>
-        </Pressable>
-      </Modal>
-      <Button
-        title="Go to Home"
-        onPress={() => navigation.navigate('Home')}
-      />
-    </View>
-  );
-}
+
+
 
 const Stack = createStackNavigator();
 
 export default function App() {
+
+
+ 
   return (
+    <Provider store={Store}>
+      <RealmProvider>
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Home"
          screenOptions={{
@@ -63,11 +62,13 @@ export default function App() {
           
         />
         <Stack.Screen
-          name="Settings"
-          component={SettingsScreen}
-          options={{ title: 'Settings' }}
+          name="Second"
+          component={SecondScreen}
+          options={{ title: 'Second' }}
         />
       </Stack.Navigator>
     </NavigationContainer>
+    </RealmProvider>
+    </Provider>
   );
 }

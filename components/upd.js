@@ -1,1 +1,0 @@
-var cloudinary = require('cloudinary');

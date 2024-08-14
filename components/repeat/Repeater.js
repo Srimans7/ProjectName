@@ -3,8 +3,23 @@ import { View, StyleSheet, Text } from "react-native";
 import DayButton from "./DayButton";
 import WeekdayButton from "./WeekdayButton";
 
-function DaySelector() {
-  const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri"];
+function DaySelector({sendData}) {
+  const [selectedDays, setSelectedDays] = React.useState([]);
+  const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  React.useEffect(() => {
+ sendData(selectedDays);
+}, [selectedDays]);
+  const handleDayPress = (day) => {
+    setSelectedDays(prevState => {
+      if (prevState.includes(day)) {
+        // Remove day if already selected
+        return prevState.filter(d => d !== day);
+      } else {
+        // Add day if not selected
+        return [...prevState, day];
+      }
+    });
+  };
 
   return (
     <View style={styles.container}>
@@ -22,7 +37,10 @@ function DaySelector() {
           </View>
           <View style={styles.dayButtonsContainer}>
             {weekdays.map((day, index) => (
-              <DayButton key={index} />
+              <DayButton      key={index}
+              label={day}
+              onPress={() => handleDayPress(day)}
+              selected={selectedDays.includes(day)} />
             ))}
           </View>
         </View>

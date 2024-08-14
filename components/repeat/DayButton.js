@@ -1,8 +1,10 @@
 import * as React from "react";
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, TouchableOpacity } from "react-native";
 
-function DayButton() {
-  return <View style={styles.dayButton} />;
+function DayButton({label, selected, onPress}) {
+  return <TouchableOpacity
+  onPress={onPress}
+><View style={[styles.dayButton, selected && styles.selectedDayButton]} /></TouchableOpacity>;
 }
 
 const styles = StyleSheet.create({
@@ -16,6 +18,9 @@ const styles = StyleSheet.create({
     marginTop: 9,
     width: 18,
     height: 16,
+  },
+  selectedDayButton: {
+    backgroundColor: '#d3d3d3',
   },
 });
 

@@ -1,63 +1,235 @@
 import * as React from "react";
-import {useState} from 'react';
-import { Alert, SafeAreaView, StyleSheet, Text, View, TouchableOpacity, ImageBackground, Button, Modal, Pressable } from 'react-native';
-import UploadImage from './Uploadimage';
+import {useState, useEffect} from 'react';
+import { Alert, SafeAreaView, StyleSheet, Text, View, TouchableOpacity, ImageBackground, Button, Modal, Pressable, Image } from 'react-native';
+import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
+import storage from '@react-native-firebase/storage';
 
-function Card({ time, task }) {
+import Sliders from './slider';
+import { useSelector, useDispatch } from 'react-redux';
+import { setDb } from '../redux/actions';
 
-   function uploader(){
-    setShowUp(false);
+import { useRealm } from '../RealmProvider'; 
+import Add from '../2comp/add';
+import { ScrollView } from "react-native-gesture-handler";
 
-  }
 
-  const [showModal, setShowModal] = useState(false);
-  const [showUp, setShowUp] = useState(true);
-  const [myImage,showMyImage] = useState(null);
-
-  const handleCloseModal = () => setShowModal(false);
-  return (
-    <View style={styles.cardContainer}>
-      <View style={styles.cardDetails}>
-        <View style={styles.timeContainer}>
-          <Text style={styles.timeText}>{time}</Text>
-        </View>
-        <View style={styles.taskContainer}>
-          <Text style={styles.taskText}>{task}</Text>
-          <TouchableOpacity onPress={() => setShowModal(true)}>
-          <View style={styles.circle} />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={showModal}
-        onRequestClose={handleCloseModal}
-      >
-        <Pressable style={styles.overlay} onPress={handleCloseModal}>
-          <View style={styles.modalContainer}> 
-          <UploadImage/>
-         
-          </View>
-        </Pressable>
-      </Modal>
-      
-    </View>
-  );
-}
 
 function MyComponent() {
-  const data = [
-    { time: "#11.00AM", task: "Task 2" },
-    { time: "#12.00PM", task: "Task 3" },
-  ];
+  const dat = useSelector(state => state.userReducer);
+  console.log(`>>>>>>>>>>>>>` + dat.db);
+  data= dat.db;
+  
+  const formatTime = (isoDateString) => {
+    const date = new Date(isoDateString);
+    let hours = date.getUTCHours() % 12 || 12;
+    let minutes = date.getUTCMinutes().toString().padStart(2, '0');
+    return `${hours.toString().padStart(2, '0')}:${minutes} ${date.getUTCHours() >= 12 ? 'PM' : 'AM'}`;
+  };
 
+  const dispatch = useDispatch();
+  const realm = useRealm();
+ 
+  useEffect(() => { async () => {
+    if (realm) {
+      const tasks = realm.objects('Task');
+      console.log('fina    ', tasks)
+      dispatch(setDb(tasks));
+    } else{
+      console.log('fina    ')
+    }
+}}, [realm, dispatch]);
+
+  function Card({ time, task, id }) {
+
+    function uploader(){
+     setShowUp(false);
+ 
+   }
+ 
+ 
+ 
+   const [showModal, setShowModal] = useState(false);
+   const [showUp, setShowUp] = useState(true);
+   const [myImage,showMyImage] = useState(null);
+   const [percentage, setPercentage] = useState(0);
+   const handleCloseModal = () => setShowModal(false);
+   const [imageUri, setImageUri] = useState([]);
+   const { db} = useSelector(state => state.userReducer);
+   const [images,setImages] = useState();
+   const [img,setImg] = useState(['https://as2.ftcdn.net/v2/jpg/07/91/22/59/1000_F_791225927_caRPPH99D6D1iFonkCRmCGzkJPf36QDw.jpg']);
+   const [p,sp] = useState();
+
+  useEffect(() => {
+    console.log(`id :        `, id)
+    if (realm && realm.objectForPrimaryKey('Task', id) && realm.objectForPrimaryKey('Task', id).img[0]) {
+     
+      setImg(realm.objectForPrimaryKey('Task', id).img)
+    }
+  }, [realm, dispatch]);
+
+  useEffect(() => {
+    
+      uploadImage();
+    
+  }, [realm, dispatch, imageUri]);
+
+   /* useEffect(() => {
+    if (realm) {
+      let k = realm.objectForPrimaryKey('Task', id).img;
+      console.log('   hhhhh',k);
+      if( k[0]){ setImg(k)
+
+               console.log('hhhhh'  ,k);
+      }
+        //else  {setImages(['https://as2.ftcdn.net/v2/jpg/07/91/22/59/1000_F_791225927_caRPPH99D6D1iFonkCRmCGzkJPf36QDw.jpg']);
+       
+        //}
+        
+    }
+  }, [realm, dispatch, p]); */
+   console.log('images >>>>>>>>>>>>', imageUri);
+ 
+   const openCamera = () => {
+     launchCamera({ mediaType: 'photo' }, (response) => {
+       if (response.didCancel) {
+         console.log('User cancelled image picker');
+       } else if (response.errorCode) {
+         console.log('ImagePicker Error: ', response.errorMessage);
+       } else {
+        setImageUri((prevUris) => [...prevUris, response.assets[0].uri]);
+         console.log(imageUri);
+         uploadImage();
+       }
+     });
+   };
+ 
+   const openImageLibrary = () => {
+     launchImageLibrary({ mediaType: 'photo' }, (response) => {
+       if (response.didCancel) {
+         console.log('User cancelled image picker');
+       } else if (response.errorCode) {
+         console.log('ImagePicker Error: ', response.errorMessage);
+       } else {
+         setImageUri(response.assets[0].uri);
+       }
+     });
+   };
+ 
+ 
+ 
+ 
+     const uploadImage = async () => {
+      //add ur
+       if (imageUri == []) return;
+       for (ur of imageUri){
+       const filename = ur.substring(ur.lastIndexOf('/') + 1);
+       const storageRef = storage().ref(`images/${filename}`);
+ 
+       try {
+         await storageRef.putFile(ur);
+         const downloadURL = await storageRef.getDownloadURL();
+         updateTask(id,downloadURL);
+         console.log('Image uploaded successfully: ', downloadURL);
+         Alert.alert('Upload Success', 'Image uploaded successfully');
+       } catch (error) {
+         console.error('Error uploading image: ', error);
+         Alert.alert('Upload Failed', 'Failed to upload image');
+       }
+     };}
+ 
+ 
+ 
+   const sliderData = img[0] && img.map((uri, index) => ({
+     key: index,
+     imageUrl: uri,
+   }));
+
+
+   const updateTask = async (documentId, newValue) => {
+    if (realm) {
+      try {
+        const taskToUpdate = realm.objectForPrimaryKey('Task', documentId); // Assuming 'Task' is the model name and _id is the primary key
+
+        if (taskToUpdate) {
+          realm.write(() => {
+            taskToUpdate.img.push(newValue); // Replace 'someProperty' with the actual property to update
+          });
+          setImg([...taskToUpdate.img]);
+          console.log('Successfully updated the task');
+        } else {
+          console.log('Task not found');
+        }
+      } catch (err) {
+        console.error('Error updating task', err);
+      }
+    }
+  };
+
+  const compTask = async (documentId) => {
+    if (realm) {
+      try {
+        const taskToUpdate = realm.objectForPrimaryKey('Task', documentId); // Assuming 'Task' is the model name and _id is the primary key
+
+        if (taskToUpdate) {
+          realm.write(() => {
+            taskToUpdate.status = 'done'; // Replace 'someProperty' with the actual property to update
+          });
+          console.log('Successfully updated the task');
+        } else {
+          console.log('Task not found');
+        }
+      } catch (err) {
+        console.error('Error updating task', err);
+      }
+    }
+  };
+ 
+   return (
+     <View style={styles.cardContainer}>
+       <View style={styles.cardDetails}>
+         <View style={styles.timeContainer}>
+           <Text style={styles.timeText}>{time}</Text>
+         </View>
+         <View style={styles.taskContainer}>
+           <Text style={styles.taskText}>{task}</Text>
+           <TouchableOpacity onPress={() => setShowModal(true)}>
+           <View style={styles.circle} />
+           </TouchableOpacity>
+         </View>
+       </View>
+ 
+       <Modal
+         animationType="fade"
+         transparent={true}
+         visible={showModal}
+         onRequestClose={handleCloseModal}
+       >
+         
+         <Pressable style={styles.overlay} onPress={handleCloseModal}>
+           <View style={styles.modalContainer}> 
+           <Button title="Open Camera" onPress={openCamera} />
+           <Button title="Open Image Library" onPress={openImageLibrary} />
+           </View>
+         </Pressable>
+ 
+         {<Sliders data = {sliderData}/>}
+       
+        <Add
+          imageSource={require('../assets/o.png')}
+          onPress={() => compTask(id)}
+        />
+       </Modal>
+       
+     </View>
+   );
+ }
   return (
     <View style={styles.wrapper}>
-      {data.map((item, index) => (
-        <Card key={index} time={item.time} task={item.task} />
+      <ScrollView>
+      {   [...data].sort((a, b) => new Date(b.date) - new Date(a.date)).map((item, index) => (
+        <Card key={index} time={formatTime(item.date)} task={item.title} id={item._id} />
       ))}
+      </ScrollView>
     </View>
   );
 }

@@ -1,12 +1,62 @@
 import React, { useState } from "react";
-import { Alert, SafeAreaView, StyleSheet, Text, View, TouchableOpacity, ImageBackground, Image, TextInput, Pressable } from 'react-native';
+import { Alert, SafeAreaView, StyleSheet, Text, View, TouchableOpacity, ImageBackground, Switch, Image, TextInput, Pressable } from 'react-native';
 import DatePicker from 'react-native-date-picker';
 import Repeator from './repeat/Repeater';
 import LinearGradient from 'react-native-linear-gradient';
+import Slider from "@react-native-community/slider";
+import Realm from "realm";
+import Task from './model';
+import { useRealm } from '../RealmProvider';
 
-export default function AddTask(){
+export default  function AddTask(){
   const [date, setDate] = useState(new Date());
+  const [percentage, setPercentage] = useState(0);
+  const [title, setTitle] = useState('');
+  const [week, setWeek] = useState([]);
+
+  const [isEnabled, setIsEnabled] = useState(false);
+  const toggleSwitch = () => setIsEnabled(previousState => !previousState);
+  function weekData(data){
+    setWeek(data);
+  }
+
+  const realm = useRealm();
+
+ const  app =  new  Realm.App({ id: "app-tdeydcy" });
+const credentials = Realm.Credentials.emailPassword('s.sriman.2002@gmail.com', 'victoria@69');
+async function connect(){
+
+
+
+realm.write(() => {
+  realm.create(Task, {
+    _id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    date,
+    percentage,
+    title,
+    week,
+    status: 'undone',
+  });
+}); 
+
+// create new dog
+/*const dog = realm.write(() => {
+realm.create(Dog, { _id: new Realm.BSON.ObjectId(), name: "Clifford", age: 12 });
+realm.create(Dog, { _id: new Realm.BSON.ObjectId(), name: "Spot", age: 5 });
+realm.create(Dog, { _id: Realm.BSON.ObjectId(), name: "Buddy", age: 7 });
+});*/
+
+// update dog's age
+
+// delete dog
+
+// get all dogs
+const tasks = realm.objects(Task);
+ console.log(tasks);} 
+
+
   return (
+   
     <View style={styles.container}>
     
       <View style={styles.content}>
@@ -27,12 +77,33 @@ export default function AddTask(){
         <View style={styles.taskInputContainer}>
           <TextInput
             style={styles.input}
-            placeholder="title"
+            value={(title)}
+            onChangeText={(value) => setTitle(value )}
             placeholderTextColor="#000"
             accessibilityLabel="Enter task title"
           />
         </View>
         <DatePicker date={date} onDateChange={setDate} />
+        {isEnabled ? <Slider
+        style={styles.slider}
+        minimumValue={0}
+        maximumValue={100}
+
+        step={1}
+        value = {percentage}
+        onValueChange={(value) => setPercentage(value)}
+        minimumTrackTintColor="#1fb28a"
+        maximumTrackTintColor="#d3d3d3"
+        thumbTintColor="#1fb28a"
+      /> : <Text>'@'</Text>}
+        <Switch
+          trackColor={{ false: "#767577", true: "#81b0ff" }}
+          thumbColor={isEnabled ? "#f5dd4b" : "#f4f3f4"}
+          ios_backgroundColor="#3e3e3e"
+          onValueChange={toggleSwitch}
+          value={isEnabled}
+        />
+        
         <View style={styles.dateTimeContainer}>
           <View style={styles.dateContainer}>
         
@@ -43,9 +114,9 @@ export default function AddTask(){
           
         
         </View>
-        <Repeator />
+        <Repeator sendData = {weekData}/>
         <View style={styles.submitButtonContainer}>
-          <Pressable style={styles.button} accessibilityLabel="Submit task">
+          <Pressable style={styles.button} accessibilityLabel="Submit task" onPress={connect}>
             <View style={styles.buttonInner} />
           </Pressable>
         </View>
@@ -53,6 +124,7 @@ export default function AddTask(){
       </View>
       
     </View>
+
   );
 }
 

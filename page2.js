@@ -1,50 +1,25 @@
 import React from 'react';
-import {useState, useEffect} from 'react';
+import {useState} from 'react';
 import { Alert, SafeAreaView, StyleSheet, Text, View, TouchableOpacity, ImageBackground, Button, Modal, Pressable } from 'react-native';
 import Money from './components/metrics/money';
 import Nav from './components/nav';
-import Main from './components/main-card';
+import Main from './2comp/main-card';
 import Add from './components/add';
 import Cir from './components/metrics/cir';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import AddTask from './components/addTask';
-import { useSelector, useDispatch } from 'react-redux';
-import { setDb } from './redux/actions';
-import Realm from "realm";
-import Task from './components/model';
-import { useRealm } from './RealmProvider';
 
 
 export default function HomeScreen({ navigation }) {
   const handlePress = () => {
-    navigation.navigate('Second');
+    navigation.navigate('Home');
   };
 
   const [showModal, setShowModal] = useState(false);
 
   const handleCloseModal = () => setShowModal(false);
-  const { db} = useSelector(state => state.userReducer);
-    const dispatch = useDispatch();
-    console.log(1+db);
-   
 
-const realm = useRealm();
-
-useEffect(() => {
-  if (realm) {
-    const tasks = realm.objects('Task');
-    dispatch(setDb(tasks));
-    console.log("#######   ",tasks);
-  }
-}, [realm, dispatch]);
-
-const {testFunction} = useSelector(state => state.userReducer);
-const handl = () => {
-  if (testFunction) {
-    testFunction('435435','435435435');
-  }
-};
   return (
     <ImageBackground 
       source={require('./assets/bg.png')} // Your local background image
@@ -54,32 +29,16 @@ const handl = () => {
       <View style={styles.container}>
         <Nav />
         <View style={styles.moneyContainer}>
-          <Cir onPress = {handl}/>
+          <Cir />
           <Money /> 
         </View>
         <View style={styles.line} />
-        <Text style={styles.heading}>Task Today</Text>
+        <Text style={styles.heading}>Krithik's Task</Text>
         <View style={styles.main}>
           <Main />
+
         </View>
-        <Add
-          imageSource={require('./assets/add.png')}
-          onPress={() => setShowModal(true)}
-        />
-              
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={showModal}
-        onRequestClose={handleCloseModal}
-      >
-        <Pressable style={styles.overlay} onPress={handleCloseModal}>
-          <View style={styles.modalContainer}>
-            <AddTask />
-           
-          </View>
-        </Pressable>
-      </Modal>
+        
         <TouchableOpacity style={styles.footer} onPress={handlePress}/>
       </View>
     </ImageBackground>
