@@ -71,18 +71,25 @@ const Slider = ({data}) => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 0.5,
+    backgroundColor: 'transparent',
     alignItems: 'center',
     justifyContent: 'center',
   },
   itemContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#ccc',
+    width: '100%',
+    height: 600, // Adjust height to make it more prominent
+    overflow: 'hidden',
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#ddd', // Optional: Add a border for better visibility
+    backgroundColor: 'transparent',
   },
   image: {
     width: '100%',
     height: '100%',
+    resizeMode: 'cover',
   },
   indicatorContainer: {
     flexDirection: 'row',

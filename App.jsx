@@ -8,12 +8,13 @@ import HomeScreen from './page1';
 import SecondScreen from './page2';
 import AddTask from './components/addTask';
 import { Provider } from 'react-redux';
-import { Store } from './redux/store';
+import { Store, persistor } from './redux/store';
 import { RealmProvider } from './RealmProvider';
 import PushNotification from "react-native-push-notification";
 import  { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { setTestFunction } from './redux/actions';
+import { PersistGate } from 'redux-persist/integration/react';
 
 
 
@@ -50,6 +51,7 @@ export default function App() {
  
   return (
     <Provider store={Store}>
+      <PersistGate loading={null} persistor={persistor}>
       <RealmProvider>
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Home"
@@ -69,6 +71,7 @@ export default function App() {
       </Stack.Navigator>
     </NavigationContainer>
     </RealmProvider>
+    </PersistGate>
     </Provider>
   );
 }

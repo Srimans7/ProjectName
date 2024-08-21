@@ -1,12 +1,15 @@
 import * as React from "react";
 import { View, StyleSheet, Text } from "react-native";
+import { useRealm } from '.../RealmProvider';
+import { useSelector, useDispatch } from 'react-redux';
+import { setDb } from '.../redux/actions';
 
-function MyComponent() {
+function MyComponent({mn}) {
   return (
     <View style={styles.priceContainer}>
       <Text style={styles.priceText}>
         <Text style={styles.currency}>₹</Text>
-        <Text style={styles.amount}> 120 </Text>
+        <Text style={styles.amount}> {mn} </Text>
       </Text>
     </View>
   );

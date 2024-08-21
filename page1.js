@@ -14,7 +14,7 @@ import { setDb } from './redux/actions';
 import Realm from "realm";
 import Task from './components/model';
 import { useRealm } from './RealmProvider';
-
+import moment from 'moment';
 
 export default function HomeScreen({ navigation }) {
   const handlePress = () => {
@@ -22,6 +22,8 @@ export default function HomeScreen({ navigation }) {
   };
 
   const [showModal, setShowModal] = useState(false);
+ 
+  const [sum, setSum] = useState(0);
 
   const handleCloseModal = () => setShowModal(false);
   const { db} = useSelector(state => state.userReducer);
@@ -30,11 +32,33 @@ export default function HomeScreen({ navigation }) {
    
 
 const realm = useRealm();
+const today = moment().startOf('day');
 
 useEffect(() => {
   if (realm) {
     const tasks = realm.objects('Task');
-    dispatch(setDb(tasks));
+    const prevSum = realm.objectForPrimaryKey('Task', "1724230688403-kv2er3pcj").mon;
+    let localSum = prevSum;
+    realm.write(() => {
+      
+    tasks.forEach(task => {
+      const taskDate = moment(task.date);
+      if(task.status == 'ver') realm.delete(task);
+      if (taskDate.isBefore(today)) {
+        if(task.status == 'today' || task.status == 'undone' ){
+        localSum += task.mon;
+        realm.delete(task);}
+        console.log(`Deleted task`);
+      } else if (taskDate.isSame(today, 'day')) {
+        if(task.status == 'undone') task.status = 'today';
+      }
+
+      realm.objectForPrimaryKey('Task', "1724230688403-kv2er3pcj").mon = localSum;
+    }) });
+    setSum(localSum);
+    dispatch(setDb(tasks)); // task today undone present done 
+    // done comp(delete)
+    //unver || undone present 
     console.log("#######   ",tasks);
   }
 }, [realm, dispatch]);
@@ -45,6 +69,8 @@ const handl = () => {
     testFunction('435435','435435435');
   }
 };
+
+
   return (
     <ImageBackground 
       source={require('./assets/bg.png')} // Your local background image
@@ -55,7 +81,7 @@ const handl = () => {
         <Nav />
         <View style={styles.moneyContainer}>
           <Cir onPress = {handl}/>
-          <Money /> 
+          <Money mn = {sum}/> 
         </View>
         <View style={styles.line} />
         <Text style={styles.heading}>Task Today</Text>

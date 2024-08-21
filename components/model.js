@@ -7,7 +7,9 @@ Task.schema = {
   properties: {
     _id: 'string', // Primary key
     date: 'date',
-    percentage: 'int',
+    dur: 'int',
+    comp: 'int',
+    mon: 'int',
     title: 'string',
     week: 'string[]',
     img: 'string[]',

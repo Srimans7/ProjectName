@@ -7,175 +7,175 @@ import Slider from "@react-native-community/slider";
 import Realm from "realm";
 import Task from './model';
 import { useRealm } from '../RealmProvider';
+import { useSelector, useDispatch } from 'react-redux';
+import { setDb } from '../redux/actions';
 
-export default  function AddTask(){
+export default function AddTask() {
   const [date, setDate] = useState(new Date());
-  const [percentage, setPercentage] = useState(0);
+  const [dur, setDur] = useState(5);
+  const [mon, setMon] = useState(10);
   const [title, setTitle] = useState('');
   const [week, setWeek] = useState([]);
-
   const [isEnabled, setIsEnabled] = useState(false);
+
   const toggleSwitch = () => setIsEnabled(previousState => !previousState);
-  function weekData(data){
+  
+  function weekData(data) {
     setWeek(data);
   }
 
+  const dispatch = useDispatch();
+
+  const mapValueToNonLinearScale = (value) => {
+    const maxSliderValue = 300;
+    const scaleFactor = 2;
+    const adjustedValue = 10 + Math.pow(value / maxSliderValue, scaleFactor) * maxSliderValue;
+    return Math.floor(adjustedValue);
+  };
+
+  const handleValueChange = (value) => {
+    const nonLinearValue = mapValueToNonLinearScale(value);
+    setMon(nonLinearValue);
+  };
+
   const realm = useRealm();
 
- const  app =  new  Realm.App({ id: "app-tdeydcy" });
-const credentials = Realm.Credentials.emailPassword('s.sriman.2002@gmail.com', 'victoria@69');
-async function connect(){
 
 
+  async function connect() {
+    realm.write(() => {
+      realm.create(Task, {
+        _id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        date,
+        dur,
+        mon,
+        comp: 0,
+        title,
+        week,
+        status: 'undone',
+      });
+    });
 
-realm.write(() => {
-  realm.create(Task, {
-    _id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-    date,
-    percentage,
-    title,
-    week,
-    status: 'undone',
-  });
-}); 
-
-// create new dog
-/*const dog = realm.write(() => {
-realm.create(Dog, { _id: new Realm.BSON.ObjectId(), name: "Clifford", age: 12 });
-realm.create(Dog, { _id: new Realm.BSON.ObjectId(), name: "Spot", age: 5 });
-realm.create(Dog, { _id: Realm.BSON.ObjectId(), name: "Buddy", age: 7 });
-});*/
-
-// update dog's age
-
-// delete dog
-
-// get all dogs
-const tasks = realm.objects(Task);
- console.log(tasks);} 
-
+    const tasks = realm.objects(Task);
+    dispatch(setDb(tasks));
+    console.log(tasks);
+  }
 
   return (
-   
-    <View style={styles.container}>
-    
-      <View style={styles.content}>
+    <SafeAreaView style={styles.container}>
       <LinearGradient
         colors={['rgba(172, 218, 232, 0.93)', 'rgba(229, 244, 249, 0.93)']}
         start={{ x: 0.2, y: 0.8 }}
         end={{ x: 1, y: 0 }}
         style={styles.gradient}
       >
+        {/* Header */}
         <View style={styles.header}>
           <Text style={styles.headerText}>Add Task</Text>
           <Image
-            resizeMode="auto"
+            resizeMode="contain"
             source={{ uri: "https://cdn.builder.io/api/v1/image/assets/TEMP/27964fa6c828dcea498281636964f1ff242b8366789b33cddba81c917c00a400?apiKey=2a38c587787c4f68bb9ff72712a54e47&" }}
             style={styles.headerIcon}
           />
         </View>
-        <View style={styles.taskInputContainer}>
-          <TextInput
-            style={styles.input}
-            value={(title)}
-            onChangeText={(value) => setTitle(value )}
-            placeholderTextColor="#000"
-            accessibilityLabel="Enter task title"
-          />
-        </View>
-        <DatePicker date={date} onDateChange={setDate} />
-        {isEnabled ? <Slider
-        style={styles.slider}
-        minimumValue={0}
-        maximumValue={100}
 
-        step={1}
-        value = {percentage}
-        onValueChange={(value) => setPercentage(value)}
-        minimumTrackTintColor="#1fb28a"
-        maximumTrackTintColor="#d3d3d3"
-        thumbTintColor="#1fb28a"
-      /> : <Text>'@'</Text>}
+        {/* Task Title Input */}
+        <TextInput
+          style={styles.input}
+          value={title}
+          onChangeText={(value) => setTitle(value)}
+          placeholder="Enter task title"
+          placeholderTextColor="#000"
+        />
+
+        {/* Date Picker */}
+        <DatePicker
+          date={date}
+          onDateChange={setDate}
+          mode="datetime"
+          style={styles.datePicker}
+        />
+
+        {/* Toggle Switch */}
         <Switch
           trackColor={{ false: "#767577", true: "#81b0ff" }}
           thumbColor={isEnabled ? "#f5dd4b" : "#f4f3f4"}
-          ios_backgroundColor="#3e3e3e"
           onValueChange={toggleSwitch}
           value={isEnabled}
+          style={styles.switch}
         />
-        
-        <View style={styles.dateTimeContainer}>
-          <View style={styles.dateContainer}>
-        
-            <Pressable style={styles.nextButton}>
-              <Text style={styles.nextButtonText}>next</Text>
-            </Pressable>
-          </View>
-          
-        
-        </View>
-        <Repeator sendData = {weekData}/>
-        <View style={styles.submitButtonContainer}>
-          <Pressable style={styles.button} accessibilityLabel="Submit task" onPress={connect}>
-            <View style={styles.buttonInner} />
-          </Pressable>
-        </View>
-        </LinearGradient>
-      </View>
-      
-    </View>
 
+        {/* Duration Slider */}
+        <View style={styles.sliderContainer}>
+          <Text style={styles.sliderLabel}>{dur} mins</Text>
+          <Slider
+            style={styles.slider}
+            minimumValue={0}
+            maximumValue={60}
+            step={1}
+            value={dur}
+            onValueChange={(value) => setDur(value)}
+            minimumTrackTintColor="#1fb28a"
+            maximumTrackTintColor="#d3d3d3"
+            thumbTintColor="#1fb28a"
+          />
+        </View>
+
+        {/* Monetary Slider */}
+        <View style={styles.sliderContainer}>
+          <Text style={styles.sliderLabel}>Rs. {mon}</Text>
+          <Slider
+            style={styles.slider}
+            minimumValue={10}
+            maximumValue={300}
+            step={1}
+            value={mon}
+            onValueChange={handleValueChange}
+            minimumTrackTintColor="#1fb28a"
+            maximumTrackTintColor="#d3d3d3"
+            thumbTintColor="#1fb28a"
+          />
+        </View>
+
+        {/* Repeator Component */}
+        {//<Repeator sendData={weekData} />
+}
+        {/* Submit Button */}
+        <Pressable style={styles.submitButton} onPress={connect}>
+          <Text style={styles.submitButtonText}>Submit</Text>
+        </Pressable>
+      </LinearGradient>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 30,
+    flex: 1,
+    justifyContent: 'center',
     backgroundColor: "#A1D5E5",
-    borderColor: "rgba(255, 255, 255, 0.3)",
-    borderWidth: 7,
-    maxWidth: 334,
-    alignSelf: "center",
+    paddingHorizontal: 20,
   },
-  content: {
+  gradient: {
     borderRadius: 30,
-    borderWidth: 1,
-    borderColor: "#009DCC",
+    padding: 20,
     backgroundColor: "#FFF",
-    flexDirection: "column",
-    paddingVertical: 7,
-    paddingHorizontal: 15,
-    paddingBottom: 40,
+    elevation: 3,
   },
   header: {
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 20,
   },
   headerText: {
     fontSize: 24,
     color: "#009DCC",
     fontWeight: "700",
-    fontFamily: "Inter, sans-serif",
   },
   headerIcon: {
-    width: 37,
-    aspectRatio: 1,
-  },
-  taskInputContainer: {
-    marginTop: 23,
-    alignSelf: "flex-start",
-  },
-  dateTimeContainer: {
-    marginTop: 19,
-    flexDirection: "column",
-    gap: 20,
-  },
-  dateContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 20,
+    width: 40,
+    height: 40,
   },
   input: {
     borderRadius: 10,
@@ -184,53 +184,40 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFF",
     color: "#000",
     paddingVertical: 14,
-    paddingHorizontal: 52,
-    fontSize: 24,
-    fontWeight: "700",
-    fontFamily: "Inter, sans-serif",
-    shadowColor: "rgba(0, 144, 188, 0.91)",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 4,
+    paddingHorizontal: 16,
+    fontSize: 18,
+    marginBottom: 20,
   },
-  nextButton: {
-    borderRadius: 10,
+  datePicker: {
+    alignSelf: "center",
+    marginBottom: 20,
+  },
+  switch: {
+    alignSelf: "center",
+    marginBottom: 20,
+  },
+  sliderContainer: {
+    marginBottom: 20,
+  },
+  sliderLabel: {
+    fontSize: 18,
+    color: "#009DCC",
+    marginBottom: 10,
+  },
+  slider: {
+    width: "100%",
+    height: 40,
+  },
+  submitButton: {
     backgroundColor: "#009DCC",
-    marginTop: 16,
-    paddingVertical: 5,
-    paddingHorizontal: 7,
-    shadowColor: "rgba(0, 144, 188, 0.91)",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 4,
+    borderRadius: 10,
+    paddingVertical: 15,
+    alignItems: "center",
   },
-  nextButtonText: {
+  submitButtonText: {
     color: "#FFF",
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: "700",
-    fontFamily: "Inter, sans-serif",
-    textAlign: "center",
-  },
-  submitButtonContainer: {
-    alignSelf: "flex-end",
-    marginTop: 17,
-    width: 50,
-  },
-  button: {
-    width: "100%",
-    height: 50,
-  },
-  buttonInner: {
-    borderRadius: 25,
-    borderWidth: 5,
-    borderColor: "rgba(255, 222, 102, 1)",
-    backgroundColor: "#FFF",
-    shadowColor: "rgba(0, 0, 0, 0.25)",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 1,
-    shadowRadius: 4,
-    width: "100%",
-    height: "100%",
   },
 });
 

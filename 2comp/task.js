@@ -11,24 +11,52 @@ import Add from './add';
 import { useSelector, useDispatch } from 'react-redux';
 import { setDb } from '../redux/actions';
 
-
- function Card({ time, task }) {
-
-   function uploader(){
-    setShowUp(false);
-
-  }
+import { useRealm } from '../RealmProvider'; 
 
 
+function Card({ time, task, id }) {
+  const realm = useRealm();
+  const dispatch = useDispatch();
 
   const [showModal, setShowModal] = useState(false);
-  const [showUp, setShowUp] = useState(true);
-  const [myImage,showMyImage] = useState(null);
-  const [percentage, setPercentage] = useState(0);
-  const handleCloseModal = () => setShowModal(false);
-  const [imageUri, setImageUri] = useState([]);
+  const [img, setImg] = useState([]);
 
- 
+  useEffect(() => {
+    // Fetch the images from the Realm database
+    if (realm) {
+      const task = realm.objectForPrimaryKey('Task', id);
+      if (task && task.img) {
+        setImg(task.img);
+      }
+    }
+  }, [realm, id]);
+
+  const compTask = async (documentId) => {
+    if (realm) {
+      try {
+        const taskToUpdate = realm.objectForPrimaryKey('Task', documentId);
+
+        if (taskToUpdate) {
+          realm.write(() => {
+            realm.delete(taskToUpdate);
+          });
+          console.log('Successfully deleted');
+
+          const updatedTasks = realm.objects('Task');
+          dispatch(setDb([...updatedTasks]));
+        } else {
+          console.log('Task not found');
+        }
+      } catch (err) {
+        console.error('Error deleting task', err);
+      }
+    }
+  };
+
+  const sliderData = img.map((uri, index) => ({
+    key: index,
+    imageUrl: uri,
+  }));
 
   return (
     <View style={styles.cardContainer}>
@@ -39,7 +67,7 @@ import { setDb } from '../redux/actions';
         <View style={styles.taskContainer}>
           <Text style={styles.taskText}>{task}</Text>
           <TouchableOpacity onPress={() => setShowModal(true)}>
-          <View style={styles.circle} />
+            <View style={styles.circle} />
           </TouchableOpacity>
         </View>
       </View>
@@ -48,40 +76,41 @@ import { setDb } from '../redux/actions';
         animationType="fade"
         transparent={true}
         visible={showModal}
-        onRequestClose={handleCloseModal}
+        onRequestClose={() => setShowModal(false)}
       >
-        
-        <Pressable style={styles.overlay} onPress={handleCloseModal}>
-          <View style={styles.modalContainer}> 
-          {imageUri[0] && <Sliders data = {sliderData}/>}
-        <Add
-          imageSource={require('../assets/x.png')}
-          onPress={() => setShowModal(true)}
-        />
-        <Add
-          imageSource={require('../assets/o.png')}
-          onPress={() => setShowModal(true)}
-        />
+         {img.length > 0 && <Sliders data={sliderData} />}
+        <Pressable style={styles.overlay} onPress={() => setShowModal(false)}>
+          <View style={styles.modalContainer}>
+           
+           
+            <Add
+              imageSource={require('../assets/o.png')}
+              onPress={() => compTask(id)}
+            />
           </View>
         </Pressable>
-
-      
       </Modal>
-      
     </View>
   );
 }
+
 
 function MyComponent() {
   const dat = useSelector(state => state.userReducer);
 
   data= dat.db;
   data = data.filter(item => item.status != 'undone');
+  const formatTime = (isoDateString) => {
+    const date = new Date(isoDateString);
+    let hours = date.getUTCHours() % 12 || 12;
+    let minutes = date.getUTCMinutes().toString().padStart(2, '0');
+    return `${hours.toString().padStart(2, '0')}:${minutes} ${date.getUTCHours() >= 12 ? 'PM' : 'AM'}`;
+  };
 
   return (
     <View style={styles.wrapper}>
-      {data.map((item, index) => (
-        <Card key={index} time={11} task={item.title} />
+      {[...data].sort((a, b) => new Date(a.date) - new Date(b.date)).map((item, index) => (
+        <Card key={index} time={formatTime(item.date)} task={item.title} id = {item._id} />
       ))}
     </View>
   );

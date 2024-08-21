@@ -27,7 +27,7 @@ function MyComponent() {
   };
 
   const dispatch = useDispatch();
-  const realm = useRealm();
+  const realm = useRealm(); 
  
   useEffect(() => { async () => {
     if (realm) {
@@ -39,7 +39,30 @@ function MyComponent() {
     }
 }}, [realm, dispatch]);
 
-  function Card({ time, task, id }) {
+const compTask = async (documentId) => {
+  if (realm) {
+    try {
+      const taskToUpdate = realm.objectForPrimaryKey('Task', documentId); 
+
+      if (taskToUpdate) {
+        realm.write(() => {
+          taskToUpdate.status = 'done'; // Replace 'someProperty' with the actual property to update
+        });
+        console.log('Successfully updated the task');
+
+        const updatedTasks = realm.objects('Task');
+          dispatch(setDb([...updatedTasks]));
+        
+      } else {
+        console.log('Task not found');
+      }
+    } catch (err) {
+      console.error('Error updating task', err);
+    }
+  }
+};
+
+  function Card({ time, task, id, status }) {
 
     function uploader(){
      setShowUp(false);
@@ -73,21 +96,7 @@ function MyComponent() {
     
   }, [realm, dispatch, imageUri]);
 
-   /* useEffect(() => {
-    if (realm) {
-      let k = realm.objectForPrimaryKey('Task', id).img;
-      console.log('   hhhhh',k);
-      if( k[0]){ setImg(k)
-
-               console.log('hhhhh'  ,k);
-      }
-        //else  {setImages(['https://as2.ftcdn.net/v2/jpg/07/91/22/59/1000_F_791225927_caRPPH99D6D1iFonkCRmCGzkJPf36QDw.jpg']);
-       
-        //}
-        
-    }
-  }, [realm, dispatch, p]); */
-   console.log('images >>>>>>>>>>>>', imageUri);
+ 
  
    const openCamera = () => {
      launchCamera({ mediaType: 'photo' }, (response) => {
@@ -98,7 +107,7 @@ function MyComponent() {
        } else {
         setImageUri((prevUris) => [...prevUris, response.assets[0].uri]);
          console.log(imageUri);
-         uploadImage();
+        
        }
      });
    };
@@ -118,24 +127,27 @@ function MyComponent() {
  
  
  
-     const uploadImage = async () => {
-      //add ur
-       if (imageUri == []) return;
-       for (ur of imageUri){
-       const filename = ur.substring(ur.lastIndexOf('/') + 1);
-       const storageRef = storage().ref(`images/${filename}`);
- 
-       try {
-         await storageRef.putFile(ur);
-         const downloadURL = await storageRef.getDownloadURL();
-         updateTask(id,downloadURL);
-         console.log('Image uploaded successfully: ', downloadURL);
-         Alert.alert('Upload Success', 'Image uploaded successfully');
-       } catch (error) {
-         console.error('Error uploading image: ', error);
-         Alert.alert('Upload Failed', 'Failed to upload image');
-       }
-     };}
+   const uploadImage = async () => {
+    // Check if imageUri array is empty
+    if (imageUri.length === 0) return;
+  
+    // Get the last element in the imageUri array
+    const ur = imageUri[imageUri.length - 1];
+    const filename = ur.substring(ur.lastIndexOf('/') + 1);
+    const storageRef = storage().ref(`images/${filename}`);
+  
+    try {
+      await storageRef.putFile(ur);
+      const downloadURL = await storageRef.getDownloadURL();
+      updateTask(id, downloadURL);
+      console.log('Image uploaded successfully: ', downloadURL);
+      Alert.alert('Upload Success', 'Image uploaded successfully');
+    } catch (error) {
+      console.error('Error uploading image: ', error);
+      Alert.alert('Upload Failed', 'Failed to upload image');
+    }
+  };
+  
  
  
  
@@ -165,24 +177,7 @@ function MyComponent() {
     }
   };
 
-  const compTask = async (documentId) => {
-    if (realm) {
-      try {
-        const taskToUpdate = realm.objectForPrimaryKey('Task', documentId); // Assuming 'Task' is the model name and _id is the primary key
 
-        if (taskToUpdate) {
-          realm.write(() => {
-            taskToUpdate.status = 'done'; // Replace 'someProperty' with the actual property to update
-          });
-          console.log('Successfully updated the task');
-        } else {
-          console.log('Task not found');
-        }
-      } catch (err) {
-        console.error('Error updating task', err);
-      }
-    }
-  };
  
    return (
      <View style={styles.cardContainer}>
@@ -190,7 +185,7 @@ function MyComponent() {
          <View style={styles.timeContainer}>
            <Text style={styles.timeText}>{time}</Text>
          </View>
-         <View style={styles.taskContainer}>
+         <View style={(status == 'unver') ? styles.taskContainer2 : ((status == 'over') ? styles.taskContainer3 : styles.taskContainer) }>
            <Text style={styles.taskText}>{task}</Text>
            <TouchableOpacity onPress={() => setShowModal(true)}>
            <View style={styles.circle} />
@@ -208,7 +203,8 @@ function MyComponent() {
          <Pressable style={styles.overlay} onPress={handleCloseModal}>
            <View style={styles.modalContainer}> 
            <Button title="Open Camera" onPress={openCamera} />
-           <Button title="Open Image Library" onPress={openImageLibrary} />
+           { // <Button title="Open Image Library" onPress={openImageLibrary} />
+           }
            </View>
          </Pressable>
  
@@ -226,8 +222,10 @@ function MyComponent() {
   return (
     <View style={styles.wrapper}>
       <ScrollView>
-      {   [...data].sort((a, b) => new Date(b.date) - new Date(a.date)).map((item, index) => (
-        <Card key={index} time={formatTime(item.date)} task={item.title} id={item._id} />
+      {   [...data].sort((a, b) => new Date(a.date) - new Date(b.date)).map((item, index) => (
+        (item.status == 'today') && 
+        <Card key={index} time={formatTime(item.date)} task={item.title} id={item._id} status = {item.status} />
+        
       ))}
       </ScrollView>
     </View>
@@ -285,6 +283,28 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: "space-between",
     color: "#009DCC",
+    marginTop: 0,
+    font: "600 24px Inter, sans-serif ",
+  },
+  taskContainer2: {
+    paddingLeft: 10,
+    paddingRight: 10,
+    width: "100%",
+    flexDirection: 'row',
+    justifyContent: "space-between",
+    color: "#009DCC",
+    backgroundColor: '#FFFF00',
+    marginTop: 0,
+    font: "600 24px Inter, sans-serif ",
+  },
+  taskContainer3: {
+    paddingLeft: 10,
+    paddingRight: 10,
+    width: "100%",
+    flexDirection: 'row',
+    justifyContent: "space-between",
+    color: "#009DCC",
+    backgroundColor: '#FF8488',
     marginTop: 0,
     font: "600 24px Inter, sans-serif ",
   },

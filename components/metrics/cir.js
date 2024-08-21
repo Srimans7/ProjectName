@@ -1,12 +1,12 @@
 import * as React from "react";
 import { View, StyleSheet, Text } from "react-native";
 
-function MyComponent() {
+function MyComponent({mn}) {
   return (
     <View style={styles.priceContainer}>
       <Text style={styles.priceText}>
         <Text style={styles.currency}>₹</Text>
-        <Text style={styles.amount}> 120 </Text>
+        <Text style={styles.amount}> {mn} </Text>
       </Text>
     </View>
   );
@@ -19,7 +19,7 @@ const styles = StyleSheet.create({
     marginRight: 15,
     textShadow: "2px 2px 5px #009DCC",
     borderRadius: 50,
-    boxShadow: "0px 4px 4px 1px red;",
+    boxShadow: "0px 1px 10px 1px rgba(0, 144, 188, 0.91)",
     backgroundColor: "rgba(174, 225, 241, 0.40)",
     alignItems: "center",
     width: 158,
