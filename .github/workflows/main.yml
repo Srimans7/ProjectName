@@ -26,25 +26,19 @@ jobs:
           ruby-version: '3.x'
       - name: Install Bundler
         run: gem install bundler
-      - name: Install Ruby Gems
-        run: |
-          bundle config set path 'vendor/bundle'  # Set the bundle path
-          bundle install  # Install dependencies from Gemfile
+      - name: Install Ruby Gems Globally
+        run: bundle install --system  # Install dependencies globally
       - name: Install Fastlane
-        run: gem install fastlane -NV  # Directly install Fastlane with gem install
+        run: gem install fastlane -NV  # Directly install Fastlane globally
       - name: Install Dependencies
         run: npm install
       - name: Run Tests
         run: |
           cd android  # Change to the android directory
-          export BUNDLE_GEMFILE=./Gemfile  # Ensure the correct Gemfile is used
-          export BUNDLE_PATH=./vendor/bundle  # Use the local bundle path
-          bundle exec fastlane test
+          fastlane test  # Run Fastlane without `bundle exec`
       - name: Beta Release
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
         run: |
           cd android  # Change to the android directory
-          export BUNDLE_GEMFILE=./Gemfile  # Ensure the correct Gemfile is used
-          export BUNDLE_PATH=./vendor/bundle  # Use the local bundle path
-          bundle exec fastlane beta
+          fastlane beta  # Run Fastlane without `bundle exec`
