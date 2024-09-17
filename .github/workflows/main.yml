@@ -39,7 +39,7 @@ jobs:
       - name: Install Fastlane Plugins
         run: |
           cd android
-          fastlane add_plugin versioning
+          fastlane add_plugin versioning --no-bundler
       - name: Run Tests
         run: |
           cd android  # Change to the android directory
