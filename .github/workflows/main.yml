@@ -30,8 +30,14 @@ jobs:
         run: bundle install --system  # Install dependencies globally
       - name: Install Fastlane
         run: gem install fastlane -NV  # Directly install Fastlane globally
+      - name: Remove Execute Permissions for gradlew
+        run: |
+         cd android
+         chmod -x ./*
       - name: Install Fastlane Plugins
-        run: fastlane add_plugin versioning
+        run: |
+         cd android
+         fastlane add_plugin versioning
       - name: Install Dependencies
         run: npm install --legacy-peer-deps
       - name: Set Execute Permissions for gradlew
