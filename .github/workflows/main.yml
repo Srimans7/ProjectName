@@ -32,6 +32,10 @@ jobs:
         run: gem install fastlane -NV  # Directly install Fastlane globally
       - name: Install Dependencies
         run: npm install
+      - name: Set Execute Permissions for gradlew
+        run: |
+          cd android
+          chmod +x ./gradlew  # Set execute permissions
       - name: Run Tests
         run: |
           cd android  # Change to the android directory
