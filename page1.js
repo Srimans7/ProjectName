@@ -154,7 +154,7 @@ useEffect(() => {
       dispatch(setDb1(tasko));
     }
   }
-}, [realm, dispatch, showModal]);
+}, [realm, dispatch, showModal]); 
 
 
 
