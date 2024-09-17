@@ -27,16 +27,22 @@ jobs:
       - name: Install Bundler
         run: gem install bundler
       - name: Install Ruby Gems
-        run: bundle install  # Install dependencies from Gemfile, including Fastlane and CocoaPods
-      - name: Install fastlane
-        run: gem install fastlane -NV
+        run: |
+          cd android  # Change to the android directory where Gemfile is located
+          bundle install  # Install dependencies from Gemfile, including Fastlane and CocoaPods
+      - name: Install Fastlane
+        run: |
+          cd android
+          gem install fastlane -NV  # Directly install Fastlane with gem install
       - name: Install Dependencies
         run: npm install
       - name: Run Tests
         run: |
           cd android  # Change to the android directory
-          bundle exec fastlane test
+          bundle exec fastlane test  # Run Fastlane with bundle exec
       - name: Beta Release
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-        run: bundle exec fastlane beta
+        run: |
+          cd android  # Change to the android directory
+          bundle exec fastlane beta  # Run Fastlane with bundle exec
