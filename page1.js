@@ -16,7 +16,6 @@ import Task from './components/model';
 import { useRealm } from './RealmProvider';
 import moment from 'moment';
 
-
 import {scheduleNotification} from "./notify";
 
 
@@ -73,76 +72,89 @@ function extractDateFromStatus(status) {
   return date;
 }
 
+useEffect(() => {
+  if (realm) {
+    const tasks = realm.objects('Task');
+    const tasko = realm.objects('Task1');
+    const today = moment().startOf('day'); // Define today's date
 
-const reTasks = () => {
-  const today = moment().startOf('day');
+    const prevSum = realm.objectForPrimaryKey('Task', "1724230688403-kv2er3pcj").mon;
+    let localSum = prevSum;
 
-  if (!realm) return { sum: 0, tasks: [] };
+    if (true) {
 
-  const tasks = realm.objects('Task');
-  const tasko = realm.objects('Task1');
-  const prevSum = realm.objectForPrimaryKey('Task', "1724230688403-kv2er3pcj").mon;
-  let localSum = prevSum;
 
-  realm.write(() => {
-      tasks.forEach(task => {
-          const taskDate = moment(task.date);
-          const isRepeatable = task.week && task.week.length > 0;
-          const currentDayOfWeek = moment().format('ddd');
-          const isScheduledToday = task.status.startsWith('today-') && extractDateFromStatus(task.status).getTime() === today.toDate().getTime();
+      // Proceed with Realm writing only if the task date is not equal to today
+      if (true) {
+        realm.write(() => {
+          // Update the date of the task with ID '1726208801315-iksejxg37' to today
+       // Update to current date and time
 
-          // Ensure repeatable tasks are updated for today and scheduled only once
-          if (isRepeatable && task.week.includes(currentDayOfWeek) && !isScheduledToday) {
-              if (task.status === 'active') {
-                  task.status = `today-${getCurrentDateInDDMMYY()}`;
-                  scheduleNotification(task.title, new Date(convertUTCtoIST(task.date)));
-              } else if (task.status === 'undone') {
-                  localSum += task.mon;
-                  task.status = `today-${getCurrentDateInDDMMYY()}`;
-                  scheduleNotification(task.title, new Date(convertUTCtoIST(task.date)));
+          tasks.forEach(task => {
+            const taskDate = moment(task.date);
+            const isRepeatable = task.week && task.week.length > 0;
+            const currentDayOfWeek = moment().format('ddd');
+
+         
+            // Ensure repeatable tasks are updated for today first
+            if (isRepeatable && task.week.includes(currentDayOfWeek)) {
+              if (task.status == 'active') {
+                task.status = `today-${getCurrentDateInDDMMYY()}`; // Ensure status is updated for repeatable tasks
+                scheduleNotification(task.title, new Date(convertUTCtoIST(task.date)));
               }
-              // Removed condition to change "done" tasks to "today" again on the same day
-          }
+              else if (task.status.substring(0, 5) === 'today'  || task.status === 'undone') {
+                if(extractDateFromStatus(task.status) != getCurrentDateInDDMMYY()){
+                localSum += task.mon;
+                task.status = `today-${getCurrentDateInDDMMYY()}`; // Ensure status is updated for repeatable tasks
+                scheduleNotification(task.title, new Date(convertUTCtoIST(task.date)));
+                }
+              }
+              else if(task.status === 'done'){
+                task.status = `today-${getCurrentDateInDDMMYY()}`; // Ensure status is updated for repeatable tasks
+                scheduleNotification(task.title, new Date(convertUTCtoIST(task.date)));               
+              }
+            }
 
-          // Handle task status changes
-          if (task.status === 'ver') {
+            // Handle task status changes
+            if (task.status === 'ver') {
               if (isRepeatable) {
-                  task.status = 'active';
+                task.status = 'active'; // Correct assignment
               } else {
-                  realm.delete(task);
+                realm.delete(task);
               }
-          } else if (taskDate.isBefore(today)) {
+            } else if (taskDate.isBefore(today)) {
               if (task.status === 'today' || task.status === 'undone') {
-                  localSum += task.mon;
-                  if (isRepeatable) {
-                      task.status = 'active';
-                  } else {
-                      realm.delete(task);
-                  }
+                localSum += task.mon;
+                if (isRepeatable) {
+                  task.status = 'active'; // Correct assignment
+                } else {
+                  realm.delete(task);
+                }
               }
-          } else if (taskDate.isSame(today, 'day')) {
-              if (task.status === 'undone' && !isScheduledToday) {
-                  task.status = 'today';
-                  scheduleNotification(task.title, new Date(convertUTCtoIST(task.date)));
+            } else if (taskDate.isSame(today, 'day')) {
+              if (task.status === 'undone') {
+                task.status = 'today';
+                scheduleNotification(task.title, new Date(convertUTCtoIST(task.date)));
               } else if (task.status === 'inactive') {
-                  task.status = 'active';
+                task.status = 'active'; // Correct assignment
               }
-          }
+            }
 
-          // Update the 'mon' value in the task with the specified primary key
-          realm.objectForPrimaryKey('Task', "1724230688403-kv2er3pcj").mon = localSum;
-      });
-  });
+            // Update the 'mon' value in the task with the specified primary key
+            realm.objectForPrimaryKey('Task', "1724230688403-kv2er3pcj").mon = localSum;
+          });
+        });
 
- 
-  dispatch(setDb(tasks));
+        // Update the sum state
+      }
+      setSum(localSum);
 
-
-};
-
-
-useEffect(() => reTasks, [ showModal]);
-
+      // Update the redux store with tasks
+      dispatch(setDb(tasks));
+      dispatch(setDb1(tasko));
+    }
+  }
+}, [realm, dispatch, showModal]);
 
 
 
