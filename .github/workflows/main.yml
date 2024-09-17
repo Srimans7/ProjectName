@@ -31,9 +31,7 @@ jobs:
       - name: Install Fastlane
         run: gem install fastlane -NV  # Directly install Fastlane globally
       - name: Install Fastlane Plugins
-        run: |
-          cd android
-          fastlane add_plugin versioning
+        run: fastlane add_plugin versioning
       - name: Install Dependencies
         run: npm install --legacy-peer-deps
       - name: Set Execute Permissions for gradlew
