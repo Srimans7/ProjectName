@@ -33,8 +33,10 @@ jobs:
       - name: Install Dependencies
         run: npm install
       - name: Run Tests
-        run: fastlane test
+        run: |
+          cd android  # Change to the android directory
+          bundle exec fastlane test
       - name: Beta Release
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-        run: fastlane beta
+        run: bundle exec fastlane beta
