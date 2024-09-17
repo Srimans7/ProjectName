@@ -8,12 +8,9 @@ platform :android do
 
   desc "Submit a new Beta Build to Firebase App Distribution"
   lane :beta do
-    increment_version_code
+    
     gradle(
-      task: "assembleRelease",
-      properties: {
-        "android.injected.version.code": Time.now.to_i
-      }
+      task: "assembleRelease"
     )
     firebase_app_distribution(
       app: "1:579341334740:android:ed0228454d8c4da3a0a341",
