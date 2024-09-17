@@ -3,7 +3,7 @@ name: Android CI/CD
 on:
   push:
     branches:
-      - main
+      - '**'  # Triggers on pushes to any branch
 
 jobs:
   build:
