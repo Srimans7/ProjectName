@@ -18,31 +18,6 @@ import { PersistGate } from 'redux-persist/integration/react';
 
 
 
-// Must be outside of any component LifeCycle (such as `componentDidMount`).
-PushNotification.configure({
-  // (optional) Called when Token is generated (iOS and Android)
-  onRegister: function (token) {
-    console.log("TOKEN:", token);
-  },
-
-  // (required) Called when a remote is received or opened, or local notification is opened
-  onNotification: function (notification) {
-    console.log("NOTIFICATION:", notification);
-  }
-
-});
-
-const test = (title, message) => {
-  PushNotification.localNotification({
-    title: title,
-    message: message,
-    channelId: "your-channel-id",
-  });
-};
-
-
-
-
 const Stack = createStackNavigator();
 
 export default function App() {

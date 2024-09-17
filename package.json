@@ -10,6 +10,12 @@
     "start": "react-native start",
     "test": "jest"
   },
+  "jest": {
+    "preset": "react-native",
+    "transformIgnorePatterns": [
+      "node_modules/(?!(react-native|@react-native|@react-native-community|@react-navigation|@realm|@react-native-firebase|@reduxjs/toolkit|bson|crypto|fs|moment|mongodb|mongoose|react|react-native-date-picker|react-native-fs|react-native-gesture-handler|react-native-image-picker|react-native-linear-gradient|react-native-push-notification|react-native-reanimated|react-native-safe-area-context|react-native-screens|react-native-svg-charts|react-native-testing-library|react-native-url-polyfill|react-redux|realm|redux|redux-logger|redux-persist|redux-promise-middleware|redux-thunk|save|stream|timers)/)"
+    ]
+  },
   "dependencies": {
     "-": "^0.0.1",
     "@react-native-async-storage/async-storage": "^1.24.0",
@@ -21,6 +27,7 @@
     "@react-navigation/stack": "^6.3.29",
     "@realm/react": "^0.9.0",
     "@reduxjs/toolkit": "^2.2.7",
+    "@testing-library/react-native": "^12.7.2",
     "bson": "*",
     "crypto": "^1.0.1",
     "fs": "*",
@@ -39,6 +46,7 @@
     "react-native-safe-area-context": "^4.10.4",
     "react-native-screens": "^3.31.1",
     "react-native-svg-charts": "^5.4.0",
+    "react-native-testing-library": "^6.0.0",
     "react-native-url-polyfill": "^2.0.0",
     "react-redux": "^9.1.2",
     "realm": "^12.12.1",
@@ -59,6 +67,7 @@
     "@react-native/eslint-config": "0.74.84",
     "@react-native/metro-config": "0.74.84",
     "@react-native/typescript-config": "0.74.84",
+    "@testing-library/react-hooks": "^8.0.1",
     "@types/react": "^18.2.6",
     "@types/react-test-renderer": "^18.0.0",
     "babel-jest": "^29.6.3",

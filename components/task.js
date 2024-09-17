@@ -7,7 +7,7 @@ import storage from '@react-native-firebase/storage';
 import Sliders from './slider';
 import { useSelector, useDispatch } from 'react-redux';
 import { setDb } from '../redux/actions';
-
+import Task from './model';
 import { useRealm } from '../RealmProvider'; 
 import Add from '../2comp/add';
 import { ScrollView } from "react-native-gesture-handler";
@@ -16,7 +16,7 @@ import { ScrollView } from "react-native-gesture-handler";
 
 function MyComponent() {
   const dat = useSelector(state => state.userReducer);
-  console.log(`>>>>>>>>>>>>>` + dat.db);
+
   data= dat.db;
   
   const formatTime = (isoDateString) => {
@@ -31,36 +31,15 @@ function MyComponent() {
  
   useEffect(() => { async () => {
     if (realm) {
-      const tasks = realm.objects('Task');
-      console.log('fina    ', tasks)
+      const tasks = realm.objects(Task);
+   
       dispatch(setDb(tasks));
     } else{
-      console.log('fina    ')
+  
     }
 }}, [realm, dispatch]);
 
-const compTask = async (documentId) => {
-  if (realm) {
-    try {
-      const taskToUpdate = realm.objectForPrimaryKey('Task', documentId); 
 
-      if (taskToUpdate) {
-        realm.write(() => {
-          taskToUpdate.status = 'done'; // Replace 'someProperty' with the actual property to update
-        });
-        console.log('Successfully updated the task');
-
-        const updatedTasks = realm.objects('Task');
-          dispatch(setDb([...updatedTasks]));
-        
-      } else {
-        console.log('Task not found');
-      }
-    } catch (err) {
-      console.error('Error updating task', err);
-    }
-  }
-};
 
   function Card({ time, task, id, status }) {
 
@@ -83,10 +62,10 @@ const compTask = async (documentId) => {
    const [p,sp] = useState();
 
   useEffect(() => {
-    console.log(`id :        `, id)
-    if (realm && realm.objectForPrimaryKey('Task', id) && realm.objectForPrimaryKey('Task', id).img[0]) {
+  
+    if (realm && realm.objectForPrimaryKey(Task, id) && realm.objectForPrimaryKey(Task, id).img[0]) {
      
-      setImg(realm.objectForPrimaryKey('Task', id).img)
+      setImg(realm.objectForPrimaryKey(Task, id).img)
     }
   }, [realm, dispatch]);
 
@@ -101,12 +80,12 @@ const compTask = async (documentId) => {
    const openCamera = () => {
      launchCamera({ mediaType: 'photo' }, (response) => {
        if (response.didCancel) {
-         console.log('User cancelled image picker');
+
        } else if (response.errorCode) {
          console.log('ImagePicker Error: ', response.errorMessage);
        } else {
         setImageUri((prevUris) => [...prevUris, response.assets[0].uri]);
-         console.log(imageUri);
+      
         
        }
      });
@@ -115,7 +94,7 @@ const compTask = async (documentId) => {
    const openImageLibrary = () => {
      launchImageLibrary({ mediaType: 'photo' }, (response) => {
        if (response.didCancel) {
-         console.log('User cancelled image picker');
+
        } else if (response.errorCode) {
          console.log('ImagePicker Error: ', response.errorMessage);
        } else {
@@ -140,8 +119,7 @@ const compTask = async (documentId) => {
       await storageRef.putFile(ur);
       const downloadURL = await storageRef.getDownloadURL();
       updateTask(id, downloadURL);
-      console.log('Image uploaded successfully: ', downloadURL);
-      Alert.alert('Upload Success', 'Image uploaded successfully');
+
     } catch (error) {
       console.error('Error uploading image: ', error);
       Alert.alert('Upload Failed', 'Failed to upload image');
@@ -160,14 +138,13 @@ const compTask = async (documentId) => {
    const updateTask = async (documentId, newValue) => {
     if (realm) {
       try {
-        const taskToUpdate = realm.objectForPrimaryKey('Task', documentId); // Assuming 'Task' is the model name and _id is the primary key
+        const taskToUpdate = realm.objectForPrimaryKey(Task, documentId); // Assuming 'Task1' is the model name and _id is the primary key
 
         if (taskToUpdate) {
           realm.write(() => {
             taskToUpdate.img.push(newValue); // Replace 'someProperty' with the actual property to update
           });
           setImg([...taskToUpdate.img]);
-          console.log('Successfully updated the task');
         } else {
           console.log('Task not found');
         }
@@ -177,6 +154,33 @@ const compTask = async (documentId) => {
     }
   };
 
+
+  const compTask = async (documentId) => {
+    if (realm) {
+      try {
+        const taskToUpdate = realm.objectForPrimaryKey(Task, documentId); 
+  
+        if (taskToUpdate) {
+          realm.write(() => {
+
+            setShowModal(false);
+            taskToUpdate.status = 'done';
+            const taskst = realm.objects(Task); 
+    dispatch(setDb(taskst));
+             // Replace 'someProperty' with the actual property to update
+          });
+  
+          const updatedTasks = realm.objects(Task);
+            dispatch(setDb([...updatedTasks]));
+          
+        } else {
+          console.log('Task not found');
+        }
+      } catch (err) {
+        console.error('Error updating task', err);
+      }
+    }
+  };
 
  
    return (
@@ -223,7 +227,7 @@ const compTask = async (documentId) => {
     <View style={styles.wrapper}>
       <ScrollView>
       {   [...data].sort((a, b) => new Date(a.date) - new Date(b.date)).map((item, index) => (
-        (item.status == 'today') && 
+        (item.status === 'today' || item.status.substring(0, 5) === 'today' ) && 
         <Card key={index} time={formatTime(item.date)} task={item.title} id={item._id} status = {item.status} />
         
       ))}

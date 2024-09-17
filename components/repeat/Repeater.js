@@ -24,14 +24,16 @@ function DaySelector({sendData}) {
   return (
     <View style={styles.container}>
       <View style={styles.selectorWrapper}>
-        <View style={styles.everydayWrapper}>
+        
+        
+        <View style={styles.weekdayWrapper}>
+          
+          <View style={styles.weekdayButtonsContainer}>
+          <View style={styles.everydayWrapper}>
           <View style={styles.everydayButton}>
             <Text>Everyday</Text>
           </View>
-          <DayButton />
         </View>
-        <View style={styles.weekdayWrapper}>
-          <View style={styles.weekdayButtonsContainer}>
             <WeekdayButton label="Weekday" />
             <WeekdayButton label="Weekend" />
           </View>
@@ -69,20 +71,17 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFF",
     display: "flex",
     alignItems: "stretch",
-    gap: 1,
     padding: 15,
   },
   everydayWrapper: {
     alignSelf: "flex-start",
     display: "flex",
     flexDirection: "column",
-    alignItems: "stretch",
     fontSize: 10,
     color: "rgba(0, 144, 188, 0.91)",
     fontWeight: "500",
   },
   everydayButton: {
-    fontFamily: "Inter, sans-serif",
     borderRadius: 5,
     shadowColor: "rgba(0, 144, 188, 0.91)",
     shadowOffset: { width: 0, height: 4 },
@@ -92,9 +91,9 @@ const styles = StyleSheet.create({
     borderStyle: "solid",
     borderWidth: 1,
     backgroundColor: "#CFEEF8",
-    alignItems: "stretch",
-    justifyContent: "center",
     padding: 4,
+    alignItems: "center",
+    justifyContent: "center",
   },
   weekdayWrapper: {
     display: "flex",
@@ -104,7 +103,6 @@ const styles = StyleSheet.create({
   weekdayButtonsContainer: {
     display: "flex",
     flexDirection: "row",
-    alignItems: "stretch",
     gap: 7,
     fontSize: 10,
     color: "rgba(0, 144, 188, 0.91)",
@@ -112,11 +110,13 @@ const styles = StyleSheet.create({
   },
   dayButtonsContainer: {
     display: "flex",
-    marginTop: 9,
     flexDirection: "row",
-    alignItems: "stretch",
-    gap: 13,
+    flexWrap: "wrap",  // Allow buttons to wrap if necessary
+    justifyContent: "space-between",  // Spread out buttons evenly
+    marginTop: 9,
+    gap: 5,  // Decrease gap between buttons
   },
 });
+
 
 export default DaySelector;

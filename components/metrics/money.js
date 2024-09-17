@@ -1,8 +1,6 @@
 import * as React from "react";
 import { View, StyleSheet, Text } from "react-native";
-import { useRealm } from '.../RealmProvider';
-import { useSelector, useDispatch } from 'react-redux';
-import { setDb } from '.../redux/actions';
+
 
 function MyComponent({mn}) {
   return (

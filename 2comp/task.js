@@ -24,7 +24,7 @@ function Card({ time, task, id }) {
   useEffect(() => {
     // Fetch the images from the Realm database
     if (realm) {
-      const task = realm.objectForPrimaryKey('Task', id);
+      const task = realm.objectForPrimaryKey('Task1', id);
       if (task && task.img) {
         setImg(task.img);
       }
@@ -32,20 +32,22 @@ function Card({ time, task, id }) {
   }, [realm, id]);
 
   const compTask = async (documentId) => {
+    
     if (realm) {
       try {
-        const taskToUpdate = realm.objectForPrimaryKey('Task', documentId);
+        const taskToUpdate = realm.objectForPrimaryKey('Task1', documentId);
 
         if (taskToUpdate) {
+          setShowModal(false);
           realm.write(() => {
             realm.delete(taskToUpdate);
           });
           console.log('Successfully deleted');
 
-          const updatedTasks = realm.objects('Task');
+          const updatedTasks = realm.objects('Task1');
           dispatch(setDb([...updatedTasks]));
         } else {
-          console.log('Task not found');
+          console.log('Task1 not found');
         }
       } catch (err) {
         console.error('Error deleting task', err);
@@ -98,8 +100,8 @@ function Card({ time, task, id }) {
 function MyComponent() {
   const dat = useSelector(state => state.userReducer);
 
-  data= dat.db;
-  data = data.filter(item => item.status != 'undone');
+  data= dat.db1;
+  data = data.filter(item => item.status == 'done');
   const formatTime = (isoDateString) => {
     const date = new Date(isoDateString);
     let hours = date.getUTCHours() % 12 || 12;

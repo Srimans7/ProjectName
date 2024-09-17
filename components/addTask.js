@@ -1,13 +1,12 @@
 import React, { useState } from "react";
-import { Alert, SafeAreaView, StyleSheet, Text, View, TouchableOpacity, ImageBackground, Switch, Image, TextInput, Pressable } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, View, Switch, Image, TextInput, Pressable } from 'react-native';
 import DatePicker from 'react-native-date-picker';
-import Repeator from './repeat/Repeater';
 import LinearGradient from 'react-native-linear-gradient';
 import Slider from "@react-native-community/slider";
 import Realm from "realm";
 import Task from './model';
 import { useRealm } from '../RealmProvider';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { setDb } from '../redux/actions';
 
 export default function AddTask() {
@@ -18,11 +17,7 @@ export default function AddTask() {
   const [week, setWeek] = useState([]);
   const [isEnabled, setIsEnabled] = useState(false);
 
-  const toggleSwitch = () => setIsEnabled(previousState => !previousState);
-  
-  function weekData(data) {
-    setWeek(data);
-  }
+  const toggleSwitch = () => setIsEnabled(prev => !prev);
 
   const dispatch = useDispatch();
 
@@ -40,25 +35,40 @@ export default function AddTask() {
 
   const realm = useRealm();
 
+  const toggleDay = (day) => {
+    setWeek((prevWeek) => {
+      if (prevWeek.includes(day)) {
+        return prevWeek.filter(d => d !== day);  // Remove day from week
+      } else {
+        return [...prevWeek, day];  // Add day to week
+      }
+    });
+  };
 
+  const isSelected = (day) => week.includes(day);
 
   async function connect() {
+    const newDate = new Date(date);
+    newDate.setHours(newDate.getHours() + 5);
+    newDate.setMinutes(newDate.getMinutes() + 30);
+    setDate(newDate);
+    
     realm.write(() => {
       realm.create(Task, {
         _id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        date,
+        date: newDate,
         dur,
         mon,
         comp: 0,
         title,
         week,
-        status: 'undone',
+        status: week.length > 0? 'inactive' : 'undone',
       });
     });
 
     const tasks = realm.objects(Task);
     dispatch(setDb(tasks));
-    console.log(tasks);
+   
   }
 
   return (
@@ -69,7 +79,6 @@ export default function AddTask() {
         end={{ x: 1, y: 0 }}
         style={styles.gradient}
       >
-        {/* Header */}
         <View style={styles.header}>
           <Text style={styles.headerText}>Add Task</Text>
           <Image
@@ -79,16 +88,14 @@ export default function AddTask() {
           />
         </View>
 
-        {/* Task Title Input */}
         <TextInput
           style={styles.input}
           value={title}
           onChangeText={(value) => setTitle(value)}
-          placeholder="Enter task title"
+          placeholder="Task title"
           placeholderTextColor="#000"
         />
 
-        {/* Date Picker */}
         <DatePicker
           date={date}
           onDateChange={setDate}
@@ -96,16 +103,14 @@ export default function AddTask() {
           style={styles.datePicker}
         />
 
-        {/* Toggle Switch */}
-        <Switch
+       { /* <Switch
           trackColor={{ false: "#767577", true: "#81b0ff" }}
           thumbColor={isEnabled ? "#f5dd4b" : "#f4f3f4"}
           onValueChange={toggleSwitch}
           value={isEnabled}
           style={styles.switch}
-        />
+        /> */ }
 
-        {/* Duration Slider */}
         <View style={styles.sliderContainer}>
           <Text style={styles.sliderLabel}>{dur} mins</Text>
           <Slider
@@ -121,7 +126,6 @@ export default function AddTask() {
           />
         </View>
 
-        {/* Monetary Slider */}
         <View style={styles.sliderContainer}>
           <Text style={styles.sliderLabel}>Rs. {mon}</Text>
           <Slider
@@ -137,10 +141,22 @@ export default function AddTask() {
           />
         </View>
 
-        {/* Repeator Component */}
-        {//<Repeator sendData={weekData} />
-}
-        {/* Submit Button */}
+        {/* Day Selection Buttons */}
+        <View style={styles.weekContainer}>
+          {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+            <Pressable
+              key={day}
+              onPress={() => toggleDay(day)}
+              style={[
+                styles.dayButton,
+                isSelected(day) && { backgroundColor: "lightblue" },
+              ]}
+            >
+              <Text style={styles.dayText}>{day}</Text>
+            </Pressable>
+          ))}
+        </View>
+
         <Pressable style={styles.submitButton} onPress={connect}>
           <Text style={styles.submitButtonText}>Submit</Text>
         </Pressable>
@@ -153,12 +169,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    backgroundColor: "#A1D5E5",
-    paddingHorizontal: 20,
+    paddingHorizontal: 15,
   },
   gradient: {
-    borderRadius: 30,
-    padding: 20,
+    borderRadius: 20,
+    padding: 15,
     backgroundColor: "#FFF",
     elevation: 3,
   },
@@ -166,58 +181,72 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 15,
   },
   headerText: {
-    fontSize: 24,
+    fontSize: 20,
     color: "#009DCC",
     fontWeight: "700",
   },
   headerIcon: {
-    width: 40,
-    height: 40,
+    width: 30,
+    height: 30,
   },
   input: {
-    borderRadius: 10,
+    borderRadius: 8,
     borderWidth: 1,
     borderColor: "#009DCC",
-    backgroundColor: "#FFF",
-    color: "#000",
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    fontSize: 18,
-    marginBottom: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    fontSize: 16,
+    marginBottom: 15,
   },
   datePicker: {
     alignSelf: "center",
-    marginBottom: 20,
+    marginBottom: 15,
   },
   switch: {
     alignSelf: "center",
-    marginBottom: 20,
+    marginBottom: 15,
   },
   sliderContainer: {
-    marginBottom: 20,
+    marginBottom: 15,
   },
   sliderLabel: {
-    fontSize: 18,
+    fontSize: 16,
     color: "#009DCC",
-    marginBottom: 10,
+    marginBottom: 8,
   },
   slider: {
     width: "100%",
     height: 40,
   },
+  weekContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginBottom: 20,
+  },
+  dayButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 8,
+    backgroundColor: "#FFF",
+    borderWidth: 1,
+    borderColor: "#009DCC",
+  },
+  dayText: {
+    color: "#009DCC",
+    fontWeight: "600",
+  },
   submitButton: {
     backgroundColor: "#009DCC",
-    borderRadius: 10,
-    paddingVertical: 15,
+    borderRadius: 8,
+    paddingVertical: 12,
     alignItems: "center",
   },
   submitButtonText: {
     color: "#FFF",
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "700",
   },
 });
-

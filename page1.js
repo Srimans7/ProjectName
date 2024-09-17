@@ -10,11 +10,15 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import AddTask from './components/addTask';
 import { useSelector, useDispatch } from 'react-redux';
-import { setDb } from './redux/actions';
+import { setDb, setDb1, setTestFunction } from './redux/actions';
 import Realm from "realm";
 import Task from './components/model';
 import { useRealm } from './RealmProvider';
 import moment from 'moment';
+
+import {scheduleNotification} from "./notify";
+
+
 
 export default function HomeScreen({ navigation }) {
   const handlePress = () => {
@@ -28,47 +32,131 @@ export default function HomeScreen({ navigation }) {
   const handleCloseModal = () => setShowModal(false);
   const { db} = useSelector(state => state.userReducer);
     const dispatch = useDispatch();
-    console.log(1+db);
+   
    
 
 const realm = useRealm();
 const today = moment().startOf('day');
 
+function convertUTCtoIST(utcDate) {
+  // Create a new Date object from the UTC date string
+  const date = new Date(utcDate);
+
+  // Calculate IST offset from UTC: +5 hours and 30 minutes
+  const offset = 5 * 60 + 30; // 5 hours * 60 minutes + 30 minutes
+
+  // Apply the IST offset (in milliseconds)
+  const istDate = new Date(date.getTime() - offset * 60 * 1000);
+
+  return istDate;
+}
+
+
+function getCurrentDateInDDMMYY() {
+  const date = new Date();
+  const day = String(date.getDate()).padStart(2, '0'); // Get day and pad with 0 if needed
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // Get month and pad with 0 if needed
+  const year = String(date.getFullYear()).slice(2); // Get the last two digits of the year
+  return `${day}${month}${year}`;
+}
+
+function extractDateFromStatus(status) {
+  // Extract the date part which starts after "today-"
+  const dateString = status.substring(6); // Get substring starting from index 6
+  const day = dateString.substring(0, 2);
+  const month = dateString.substring(2, 4);
+  const year = dateString.substring(4, 6);
+  
+  // Create a date object using the extracted parts
+  const date = new Date(`20${year}-${month}-${day}`); // Prepend '20' to year to make it 4 digits
+  return date;
+}
+
 useEffect(() => {
   if (realm) {
     const tasks = realm.objects('Task');
+    const tasko = realm.objects('Task1');
+    const today = moment().startOf('day'); // Define today's date
+
     const prevSum = realm.objectForPrimaryKey('Task', "1724230688403-kv2er3pcj").mon;
     let localSum = prevSum;
-    realm.write(() => {
-      
-    tasks.forEach(task => {
-      const taskDate = moment(task.date);
-      if(task.status == 'ver') realm.delete(task);
-      if (taskDate.isBefore(today)) {
-        if(task.status == 'today' || task.status == 'undone' ){
-        localSum += task.mon;
-        realm.delete(task);}
-        console.log(`Deleted task`);
-      } else if (taskDate.isSame(today, 'day')) {
-        if(task.status == 'undone') task.status = 'today';
+
+    if (true) {
+
+
+      // Proceed with Realm writing only if the task date is not equal to today
+      if (true) {
+        realm.write(() => {
+          // Update the date of the task with ID '1726208801315-iksejxg37' to today
+       // Update to current date and time
+
+          tasks.forEach(task => {
+            const taskDate = moment(task.date);
+            const isRepeatable = task.week && task.week.length > 0;
+            const currentDayOfWeek = moment().format('ddd');
+
+         
+            // Ensure repeatable tasks are updated for today first
+            if (isRepeatable && task.week.includes(currentDayOfWeek)) {
+              if (task.status == 'active') {
+                task.status = `today-${getCurrentDateInDDMMYY()}`; // Ensure status is updated for repeatable tasks
+                scheduleNotification(task.title, new Date(convertUTCtoIST(task.date)));
+              }
+              else if (task.status.substring(0, 5) === 'today'  || task.status === 'undone') {
+                if(extractDateFromStatus(task.status) != getCurrentDateInDDMMYY()){
+                localSum += task.mon;
+                task.status = `today-${getCurrentDateInDDMMYY()}`; // Ensure status is updated for repeatable tasks
+                scheduleNotification(task.title, new Date(convertUTCtoIST(task.date)));
+                }
+              }
+              else if(task.status === 'done'){
+                task.status = `today-${getCurrentDateInDDMMYY()}`; // Ensure status is updated for repeatable tasks
+                scheduleNotification(task.title, new Date(convertUTCtoIST(task.date)));               
+              }
+            }
+
+            // Handle task status changes
+            if (task.status === 'ver') {
+              if (isRepeatable) {
+                task.status = 'active'; // Correct assignment
+              } else {
+                realm.delete(task);
+              }
+            } else if (taskDate.isBefore(today)) {
+              if (task.status === 'today' || task.status === 'undone') {
+                localSum += task.mon;
+                if (isRepeatable) {
+                  task.status = 'active'; // Correct assignment
+                } else {
+                  realm.delete(task);
+                }
+              }
+            } else if (taskDate.isSame(today, 'day')) {
+              if (task.status === 'undone') {
+                task.status = 'today';
+                scheduleNotification(task.title, new Date(convertUTCtoIST(task.date)));
+              } else if (task.status === 'inactive') {
+                task.status = 'active'; // Correct assignment
+              }
+            }
+
+            // Update the 'mon' value in the task with the specified primary key
+            realm.objectForPrimaryKey('Task', "1724230688403-kv2er3pcj").mon = localSum;
+          });
+        });
+
+        // Update the sum state
       }
+      setSum(localSum);
 
-      realm.objectForPrimaryKey('Task', "1724230688403-kv2er3pcj").mon = localSum;
-    }) });
-    setSum(localSum);
-    dispatch(setDb(tasks)); // task today undone present done 
-    // done comp(delete)
-    //unver || undone present 
-    console.log("#######   ",tasks);
+      // Update the redux store with tasks
+      dispatch(setDb(tasks));
+      dispatch(setDb1(tasko));
+    }
   }
-}, [realm, dispatch]);
+}, [realm, dispatch, showModal]);
 
-const {testFunction} = useSelector(state => state.userReducer);
-const handl = () => {
-  if (testFunction) {
-    testFunction('435435','435435435');
-  }
-};
+
 
 
   return (
@@ -80,11 +168,11 @@ const handl = () => {
       <View style={styles.container}>
         <Nav />
         <View style={styles.moneyContainer}>
-          <Cir onPress = {handl}/>
+          <Cir />
           <Money mn = {sum}/> 
         </View>
         <View style={styles.line} />
-        <Text style={styles.heading}>Task Today</Text>
+        <Text style={styles.heading} >Task Today</Text>
         <View style={styles.main}>
           <Main />
         </View>

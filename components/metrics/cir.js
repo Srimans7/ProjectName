@@ -5,7 +5,7 @@ function MyComponent({mn}) {
   return (
     <View style={styles.priceContainer}>
       <Text style={styles.priceText}>
-        <Text style={styles.currency}>₹</Text>
+        <Text style={styles.currency}>X)</Text>
         <Text style={styles.amount}> {mn} </Text>
       </Text>
     </View>

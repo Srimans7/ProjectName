@@ -30,10 +30,10 @@ export default function HomeScreen({ navigation }) {
         <Nav />
         <View style={styles.moneyContainer}>
           <Cir />
-          <Money /> 
+          <Money mn = {'x'}/> 
         </View>
         <View style={styles.line} />
-        <Text style={styles.heading}>Krithik's Task</Text>
+        <Text style={styles.heading}>Check Tasks</Text>
         <View style={styles.main}>
           <Main />
 
