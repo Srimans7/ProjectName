@@ -15,7 +15,7 @@ jobs:
         uses: actions/setup-java@v2
         with:
           java-version: '11'
-          distribution: 'temurin' # Specify the JDK distribution
+          distribution: 'temurin'
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
@@ -23,13 +23,13 @@ jobs:
       - name: Set up Ruby
         uses: actions/setup-ruby@v1
         with:
-          ruby-version: '3.x'  # Specify the Ruby version
+          ruby-version: '3.x'
       - name: Install Bundler
         run: gem install bundler
+      - name: Install Ruby Gems
+        run: bundle install  # Install dependencies from Gemfile, including Fastlane and CocoaPods
       - name: Install Dependencies
         run: npm install
-      - name: Install Ruby Gems
-        run: bundle install  # Install dependencies from Gemfile, including Fastlane
       - name: Run Tests
         run: bundle exec fastlane test
       - name: Beta Release
