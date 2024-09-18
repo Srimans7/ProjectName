@@ -11,30 +11,38 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+
       - name: Set up JDK
         uses: actions/setup-java@v2
         with:
           java-version: '17'
           distribution: 'temurin'
+      
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
           node-version: '18'
+      
       - name: Set up Ruby
         uses: actions/setup-ruby@v1
         with:
           ruby-version: '3.x'
-      - name: Install Bundler
-        run: gem install bundler
-      - name: Install Ruby Gems Globally
+
+      # Set GEM_HOME to a local directory to avoid permission issues
+      - name: Set GEM_HOME
         run: |
-           cd android
-           bundle install
-           bundle config set path 'vendor/bundle'
-      - name: Install Fastlane
-        run: gem install fastlane -NV  # Directly install Fastlane globally
-      - name: Install Dependencies
+          echo "export GEM_HOME=$HOME/.gem" >> $GITHUB_ENV
+          echo "export PATH=$HOME/.gem/bin:$PATH" >> $GITHUB_ENV
+          
+      - name: Install Bundler and Gems
+        run: |
+          gem install bundler
+          bundle config set path 'vendor/bundle' # Install gems locally
+          bundle install --jobs 4 --retry 3
+      
+      - name: Install Node Dependencies
         run: npm install --legacy-peer-deps
+      
       - name: Set Execute Permissions for gradlew
         run: |
           cd android
@@ -43,10 +51,11 @@ jobs:
       - name: Run Tests
         run: |
           cd android  # Change to the android directory
-          fastlane test  # Run Fastlane without `bundle exec`
+          bundle exec fastlane test  # Run Fastlane with `bundle exec`
+      
       - name: Beta Release
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
         run: |
           cd android  # Change to the android directory
-          fastlane beta  # Run Fastlane without `bundle exec`
+          bundle exec fastlane beta  # Run Fastlane with `bundle exec`
