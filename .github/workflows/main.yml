@@ -36,6 +36,7 @@ jobs:
           
       - name: Install Bundler and Gems
         run: |
+          cd android
           gem install bundler
           bundle config set path 'vendor/bundle' # Install gems locally
           bundle install --jobs 4 --retry 3
