@@ -27,7 +27,9 @@ jobs:
       - name: Install Bundler
         run: gem install bundler
       - name: Install Ruby Gems Globally
-        run: bundle install --system  # Install dependencies globally
+        run: |
+           bundle install
+           bundle config set path.system true
       - name: Install Fastlane
         run: gem install fastlane -NV  # Directly install Fastlane globally
       - name: Install Dependencies
