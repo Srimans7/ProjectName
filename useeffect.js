@@ -1,15 +1,11 @@
 // useTaskManager.js
-import { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import Realm from 'realm';
 import moment from 'moment';
 import { useRealm } from './RealmProvider';
-import { setDb, setDb1 } from './redux/actions';
-import Task from './components/model';
+import { setDb } from './redux/actions';
 import { scheduleNotification } from './notify';
 
 
-  const dispatch = useDispatch();
   const realm = useRealm();
 
 
@@ -43,14 +39,13 @@ import { scheduleNotification } from './notify';
 
 
   // Function to update existing tasks
- const updateTasks = () => {
+ export const useTaskManager = () => {
     console.log('updateTasks called');
     const today = moment().startOf('day');
 
     if (!realm) return { sum: 0, tasks: [] };
 
     const tasks = realm.objects('Task');
-    const tasko = realm.objects('Task1');
     const prevSum = realm.objectForPrimaryKey('Task', "1724230688403-kv2er3pcj").mon;
     let localSum = prevSum;
 
@@ -104,7 +99,7 @@ import { scheduleNotification } from './notify';
         });
     });
 
-    dispatch(setDb(tasks));
+    useDispatch(setDb(tasks));
   
 
 };
