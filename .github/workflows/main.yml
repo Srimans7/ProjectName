@@ -28,6 +28,7 @@ jobs:
         run: gem install bundler
       - name: Install Ruby Gems Globally
         run: |
+           cd android
            bundle install
            bundle config set path.system true
       - name: Install Fastlane
