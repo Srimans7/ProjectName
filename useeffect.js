@@ -28,7 +28,7 @@ const extractDateFromStatus = (status) => {
     return date;
 };
 
-export const useTaskManager = () => {
+export default  useTaskManager = () => {
     const realm = useRealm();
     const dispatch = useDispatch();
 
@@ -74,7 +74,7 @@ export const useTaskManager = () => {
                 } else {
                     realm.delete(task);
                 }
-            } else if (isBeforeDay(taskDate.toDate(), today.toDate())) {
+            }  if (isBeforeDay(taskDate.toDate(), today.toDate())) {
                 if (task.status.startsWith('today') || task.status === "undone") {
                     localSum += task.mon;
                     if (isRepeatable) {
@@ -83,10 +83,10 @@ export const useTaskManager = () => {
                         realm.delete(task);
                     }
                 }
-            } else if (isSameDay(taskDate.toDate(), today.toDate())) {
+            }  if (isSameDay(taskDate.toDate(), today.toDate())) {
                 if (task.status === 'undone') {
                     task.status = `today-${getCurrentDateInDDMMYY()}`;
-                } else if (task.status === 'inactive') {
+                }  if (task.status === 'inactive') {
                     task.status = 'active';
                 }
             }

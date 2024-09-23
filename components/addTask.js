@@ -8,6 +8,7 @@ import Task from './model';
 import { useRealm } from '../RealmProvider';
 import { useDispatch } from 'react-redux';
 import { setDb } from '../redux/actions';
+import { scheduleNotification } from '../notify';
 
 export default function AddTask() {
   const [date, setDate] = useState(new Date());
@@ -47,11 +48,25 @@ export default function AddTask() {
 
   const isSelected = (day) => week.includes(day);
 
+  function convertUTCtoIST(utcDate) {
+    // Create a new Date object from the UTC date string
+    const date = new Date(utcDate);
+  
+    // Calculate IST offset from UTC: +5 hours and 30 minutes
+    const offset = 5 * 60 + 30; // 5 hours * 60 minutes + 30 minutes
+  
+    // Apply the IST offset (in milliseconds)
+    const istDate = new Date(date.getTime() - offset * 60 * 1000);
+  
+    return istDate;
+  }
+
   async function connect() {
+    scheduleNotification(title, new Date(convertUTCtoIST(date)));
     const newDate = new Date(date);
     newDate.setHours(newDate.getHours() + 5);
     newDate.setMinutes(newDate.getMinutes() + 30);
-    setDate(newDate);
+    setDate(new Date());
     
     realm.write(() => {
       realm.create(Task, {

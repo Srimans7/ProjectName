@@ -15,7 +15,6 @@ import Realm from "realm";
 import Task from './components/model';
 import { useRealm } from './RealmProvider';
 import moment from 'moment';
-import  useTaskManager  from './useeffect';
 
 import {scheduleNotification} from "./notify";
 
@@ -39,9 +38,105 @@ export default function HomeScreen({ navigation }) {
 const realm = useRealm();
 const today = moment().startOf('day');
 
+function convertUTCtoIST(utcDate) {
+  // Create a new Date object from the UTC date string
+  const date = new Date(utcDate);
+
+  // Calculate IST offset from UTC: +5 hours and 30 minutes
+  const offset = 5 * 60 + 30; // 5 hours * 60 minutes + 30 minutes
+
+  // Apply the IST offset (in milliseconds)
+  const istDate = new Date(date.getTime() - offset * 60 * 1000);
+
+  return istDate;
+}
+
+
+function getCurrentDateInDDMMYY() {
+  const date = new Date();
+  const day = String(date.getDate()).padStart(2, '0'); // Get day and pad with 0 if needed
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // Get month and pad with 0 if needed
+  const year = String(date.getFullYear()).slice(2); // Get the last two digits of the year
+  return `${day}${month}${year}`;
+}
+
+function extractDateFromStatus(status) {
+  // Extract the date part which starts after "today-"
+  const dateString = status.substring(6); // Get substring starting from index 6
+  const day = dateString.substring(0, 2);
+  const month = dateString.substring(2, 4);
+  const year = dateString.substring(4, 6);
+  
+  // Create a date object using the extracted parts
+  const date = new Date(`20${year}-${month}-${day}`); // Prepend '20' to year to make it 4 digits
+  return date;
+}
 
 useEffect(() => {
-  useTaskManager()
+  if (realm) {
+    const tasks = realm.objects('Task');
+    const prevSum = realm.objectForPrimaryKey('Task', "1724230688403-kv2er3pcj").mon;
+    let localSum = prevSum;
+
+    const isSameDay = (date1, date2) => {
+        return date1.getFullYear() === date2.getFullYear() &&
+               date1.getMonth() === date2.getMonth() &&
+               date1.getDate() === date2.getDate();
+    };
+
+    const isBeforeDay = (date1, date2) => {
+        return date1.getMonth() <= date2.getMonth() &&
+               date1.getDate() < date2.getDate();
+    };
+
+    realm.write(() => {
+        tasks.forEach(task => {
+            const taskDate = moment(task.date);
+            const isRepeatable = task.week && task.week.length > 0;
+            const currentDayOfWeek = moment().format('ddd');
+            const isScheduledToday = extractDateFromStatus(task.status).getTime() === today.toDate().getTime();
+
+            console.log(`Processing task: ${task.title}, date: ${taskDate.toString()}`);
+            console.log(`Repeatable: ${isRepeatable}, Status: ${task.status}`);
+
+            if (isRepeatable && task.week.includes(currentDayOfWeek) && !isScheduledToday) {
+                if (task.status !== 'active') {
+                    localSum += task.mon;
+                }
+                task.status = `today-${getCurrentDateInDDMMYY()}`;
+                scheduleNotification(task.title, new Date(convertUTCtoIST(task.date)));
+            }
+
+            if (task.status === 'ver') {
+                if (isRepeatable) {
+                    task.status = 'active';
+                } else {
+                    realm.delete(task);
+                }
+            }  if (isBeforeDay(taskDate.toDate(), today.toDate())) {
+                if (task.status.substring(0,5)=='today' || task.status === "undone") {
+                    localSum += task.mon;
+                    if (isRepeatable) {
+                        task.status = 'active';
+                    } else {
+                        realm.delete(task);
+                    }
+                }
+            }  if (isSameDay(taskDate.toDate(), today.toDate())) {
+                if (task.status === 'undone') {
+                    task.status = `today-${getCurrentDateInDDMMYY()}`;
+                }  if (task.status === 'inactive') {
+                    task.status = 'active';
+                }
+            }
+
+            realm.objectForPrimaryKey('Task', "1724230688403-kv2er3pcj").mon = localSum;
+            setSum(localSum)
+        });
+    });
+    
+    dispatch(setDb(tasks));
+  }
 }, [realm, dispatch, showModal]); 
 
 

@@ -41,6 +41,8 @@ function MyComponent() {
 
 
 
+
+
   function Card({ time, task, id, status }) {
 
     function uploader(){
@@ -227,7 +229,7 @@ function MyComponent() {
     <View style={styles.wrapper}>
       <ScrollView>
       {   [...data].sort((a, b) => new Date(a.date) - new Date(b.date)).map((item, index) => (
-        (item.status === 'today' || item.status.substring(0, 5) === 'today' ) && 
+        (item.status != 'undone' && item.status != 'inactive' && item.status != 'active' && item.status != 'done' && item.status != 'metric' ) && 
         <Card key={index} time={formatTime(item.date)} task={item.title} id={item._id} status = {item.status} />
         
       ))}
