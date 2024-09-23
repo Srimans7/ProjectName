@@ -118,7 +118,7 @@ android {
 dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
       implementation "com.facebook.react:react-native:+" // Make sure this matches your React Native version
-    implementation "com.android.tools.build:gradle:8.5.0" // Use a compatible version of the Gradle plugin
+    implementation "com.android.tools.build:gradle:8.7.0" // Use a compatible version of the Gradle plugin
 
 
     if (hermesEnabled.toBoolean()) {
