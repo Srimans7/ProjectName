@@ -78,8 +78,8 @@ android {
     namespace "com.projectname"
     defaultConfig {
         applicationId "com.projectname"
-        minSdkVersion rootProject.ext.minSdkVersion
-        targetSdkVersion rootProject.ext.targetSdkVersion
+        minSdkVersion 23
+        targetSdkVersion 34
         versionCode 1
         versionName "1.0"
     }
