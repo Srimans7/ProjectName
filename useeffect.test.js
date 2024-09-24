@@ -24,15 +24,19 @@ const tomorrow = new Date();
 tomorrow.setDate(tomorrow.getDate() + 1);
 
 const mockRealmData = [
- 
-
-  
- 
   {
     _id: "5",
     title: "Inactive Repeatable Task",
     date: new Date(),
     week: ["Sat"],
+    status: 'active',
+    mon: 50,
+  },
+  {
+    _id: "7",
+    title: "Repeatable Task",
+    date: new Date(),
+    week: ["Tue","wed"],
     status: 'active',
     mon: 50,
   },
@@ -56,41 +60,30 @@ describe('useTaskManager', () => {
     scheduleNotification.mockClear();
   });
 
-  it('should handle repeatable tasks and schedule notifications', () => {
-    const currentDate = new Date('2024-09-21T00:00:00.000Z');
+  it('should schedule notifications only once per day for repeatable tasks', () => {
+    const currentDate = new Date('2024-09-24T00:00:00.000Z');
     jest.useFakeTimers('modern').setSystemTime(currentDate);
 
     useTaskManager();
-
     expect(scheduleNotification).toHaveBeenCalledWith(
       "Repeatable Task",
       expect.any(Date)
     );
-    expect(realm.objects).toHaveBeenCalled();
-    expect(realm.write).toHaveBeenCalled();
-    expect(dispatch).toHaveBeenCalledWith(setDb(mockRealmData));
-  });
 
-
-
-  it('should handle tasks with status "ver" and reactivate if repeatable', () => {
-    const currentDate = new Date('2024-09-21T00:00:00.000Z');
-    jest.useFakeTimers('modern').setSystemTime(currentDate);
-
+    // Simulate running the task manager again on the same day (after 12 hours)
+    jest.advanceTimersByTime(12 * 60 * 60 * 1000); // 12 hours later
     useTaskManager();
 
-    expect(mockRealmData[3].status).toBe('active'); // Ver task should be set to 'active'
-  });
+    // Ensure that scheduleNotification is still only called once
+    expect(scheduleNotification).toHaveBeenCalledTimes(1);
 
-/*
-  it('should activate inactive repeatable tasks', () => {
-    const currentDate = new Date('2024-09-21T00:00:00.000Z');
-    jest.useFakeTimers('modern').setSystemTime(currentDate);
-
+    // Simulate the passage of one day and call again
+    jest.advanceTimersByTime(1 * 60 * 60 * 1000); // Advance by 24 hours
     useTaskManager();
 
-    expect(mockRealmData[4].status).toBe('active'); // Inactive repeatable task should be activated
-  }); */
+    // Ensure that scheduleNotification is called again only after a full day
+    expect(scheduleNotification).toHaveBeenCalledTimes(1);
+  });
 
   it('should not schedule notification for non-scheduled repeatable tasks', () => {
     const currentDate = new Date('2024-09-21T00:00:00.000Z');

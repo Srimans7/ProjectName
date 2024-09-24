@@ -28,7 +28,7 @@ const extractDateFromStatus = (status) => {
     return date;
 };
 
-export default  useTaskManager = () => {
+export const  useTaskManager = () => {
     const realm = useRealm();
     const dispatch = useDispatch();
 
@@ -60,7 +60,7 @@ export default  useTaskManager = () => {
             console.log(`Processing task: ${task.title}, date: ${taskDate.toString()}`);
             console.log(`Repeatable: ${isRepeatable}, Status: ${task.status}`);
 
-            if (isRepeatable && task.week.includes(currentDayOfWeek) && !isScheduledToday) {
+            if (isRepeatable && task.week.includes(currentDayOfWeek) && !(task.status == `today-${getCurrentDateInDDMMYY()}`)) {
                 if (task.status !== 'active') {
                     localSum += task.mon;
                 }
@@ -68,13 +68,13 @@ export default  useTaskManager = () => {
                 scheduleNotification(task.title, new Date(convertUTCtoIST(task.date)));
             }
 
-            if (task.status === 'ver') {
+            else if (task.status === 'ver') {
                 if (isRepeatable) {
                     task.status = 'active';
                 } else {
                     realm.delete(task);
                 }
-            }  if (isBeforeDay(taskDate.toDate(), today.toDate())) {
+            }  else if (isBeforeDay(taskDate.toDate(), today.toDate())) {
                 if (task.status.startsWith('today') || task.status === "undone") {
                     localSum += task.mon;
                     if (isRepeatable) {
@@ -83,7 +83,7 @@ export default  useTaskManager = () => {
                         realm.delete(task);
                     }
                 }
-            }  if (isSameDay(taskDate.toDate(), today.toDate())) {
+            }  else if (isSameDay(taskDate.toDate(), today.toDate())) {
                 if (task.status === 'undone') {
                     task.status = `today-${getCurrentDateInDDMMYY()}`;
                 }  if (task.status === 'inactive') {
