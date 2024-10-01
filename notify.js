@@ -43,6 +43,7 @@ function scheduleNotification(title, date) {
     vibrate: true, // Vibrate when the notification is triggered
     vibration: 300, // Vibration duration in milliseconds
   });
+  console.log('notify ',title, date)
 }
 
 // Export the scheduleNotification function

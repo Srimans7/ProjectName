@@ -157,6 +157,14 @@ function MyComponent() {
   };
 
 
+  function getCurrentDateInDDMMYY() {
+    const date = new Date();
+    const day = String(date.getDate()).padStart(2, '0'); // Get day and pad with 0 if needed
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Get month and pad with 0 if needed
+    const year = String(date.getFullYear()).slice(2); // Get the last two digits of the year
+    return `${day}${month}${year}`;
+  }
+
   const compTask = async (documentId) => {
     if (realm) {
       try {
@@ -166,7 +174,7 @@ function MyComponent() {
           realm.write(() => {
 
             setShowModal(false);
-            taskToUpdate.status = 'done';
+            taskToUpdate.status = '`done-${getCurrentDateInDDMMYY()}`';
             const taskst = realm.objects(Task); 
     dispatch(setDb(taskst));
              // Replace 'someProperty' with the actual property to update
@@ -229,7 +237,7 @@ function MyComponent() {
     <View style={styles.wrapper}>
       <ScrollView>
       {   [...data].sort((a, b) => new Date(a.date) - new Date(b.date)).map((item, index) => (
-        (item.status != 'undone' && item.status != 'inactive' && item.status != 'active' && item.status != 'done' && item.status != 'metric' ) && 
+        (item.status.startsWith('today') ) && 
         <Card key={index} time={formatTime(item.date)} task={item.title} id={item._id} status = {item.status} />
         
       ))}

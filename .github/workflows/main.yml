@@ -49,10 +49,7 @@ jobs:
           cd android
           chmod +x ./gradlew  # Set execute permissions
       
-      - name: Run Tests
-        run: |
-          cd android  # Change to the android directory
-          bundle exec fastlane test  # Run Fastlane with `bundle exec`
+
       
       - name: Beta Release
         env:

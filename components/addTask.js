@@ -56,19 +56,19 @@ export default function AddTask() {
     const offset = 5 * 60 + 30; // 5 hours * 60 minutes + 30 minutes
   
     // Apply the IST offset (in milliseconds)
-    const istDate = new Date(date.getTime() - offset * 60 * 1000);
+    const istDate = new Date(date.getTime());
   
     return istDate;
   }
 
   async function connect() {
-    scheduleNotification(title, new Date(convertUTCtoIST(date)));
+    if(week.length == 0) scheduleNotification(title, new Date(convertUTCtoIST(date)));
     const newDate = new Date(date);
     newDate.setHours(newDate.getHours() + 5);
     newDate.setMinutes(newDate.getMinutes() + 30);
-    setDate(new Date());
     
-    realm.write(() => {
+    
+   await realm.write(() => {
       realm.create(Task, {
         _id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         date: newDate,
@@ -83,6 +83,7 @@ export default function AddTask() {
 
     const tasks = realm.objects(Task);
     dispatch(setDb(tasks));
+    setDate(new Date());
    
   }
 

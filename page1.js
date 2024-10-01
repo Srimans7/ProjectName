@@ -90,50 +90,49 @@ useEffect(() => {
     };
 
     realm.write(() => {
-        tasks.forEach(task => {
-            const taskDate = moment(task.date);
-            const isRepeatable = task.week && task.week.length > 0;
-            const currentDayOfWeek = moment().format('ddd');
-            const isScheduledToday = extractDateFromStatus(task.status).getTime() === today.toDate().getTime();
+      tasks.forEach(task => {
+          const taskDate = moment(task.date);
+          const isRepeatable = task.week && task.week.length > 0;
+          const currentDayOfWeek = moment().format('ddd');
+          const isScheduledToday = task.status.startsWith('today-') && extractDateFromStatus(task.status).getTime() === today.toDate().getTime();
 
-            console.log(`Processing task: ${task.title}, date: ${taskDate.toString()}`);
-            console.log(`Repeatable: ${isRepeatable}, Status: ${task.status}`);
+          console.log(`Processing task: ${task.title}, date: ${taskDate.toString()}`);
+          console.log(`Repeatable: ${isRepeatable}, Status: ${task.status}`);
 
-            if (isRepeatable && task.week.includes(currentDayOfWeek) && !isScheduledToday) {
-                if (task.status !== 'active') {
-                    localSum += task.mon;
-                }
-                task.status = `today-${getCurrentDateInDDMMYY()}`;
-                scheduleNotification(task.title, new Date(convertUTCtoIST(task.date)));
-            }
+          if (isRepeatable && task.week.includes(currentDayOfWeek) && !(task.status == `today-${getCurrentDateInDDMMYY()}`  && !(task.status == `done-${getCurrentDateInDDMMYY()}`))) {
+              if (task.status !== 'active') {
+                  localSum += task.mon;
+              }
+              task.status = `today-${getCurrentDateInDDMMYY()}`;
+              scheduleNotification(task.title, new Date(convertUTCtoIST(task.date)));
+          }
 
-            if (task.status === 'ver') {
-                if (isRepeatable) {
-                    task.status = 'active';
-                } else {
-                    realm.delete(task);
-                }
-            }  if (isBeforeDay(taskDate.toDate(), today.toDate())) {
-                if (task.status.substring(0,5)=='today' || task.status === "undone") {
-                    localSum += task.mon;
-                    if (isRepeatable) {
-                        task.status = 'active';
-                    } else {
-                        realm.delete(task);
-                    }
-                }
-            }  if (isSameDay(taskDate.toDate(), today.toDate())) {
-                if (task.status === 'undone') {
-                    task.status = `today-${getCurrentDateInDDMMYY()}`;
-                }  if (task.status === 'inactive') {
-                    task.status = 'active';
-                }
-            }
+          else if (task.status === 'ver') {
+              if (isRepeatable) {
+                  task.status = 'active';
+              } else {
+                  realm.delete(task);
+              }
+          }  else if (isBeforeDay(taskDate.toDate(), today.toDate())) {
+              if (task.status.startsWith('today') || task.status === "undone") {
+                  localSum += task.mon;
+                  if (isRepeatable) {
+                      task.status = 'active';
+                  } else {
+                      realm.delete(task);
+                  }
+              }
+          }  else if (isSameDay(taskDate.toDate(), today.toDate())) {
+              if (task.status === 'undone') {
+                  task.status = `today-${getCurrentDateInDDMMYY()}`;
+              }  if (task.status === 'inactive') {
+                  task.status = 'active';
+              }
+          }
 
-            realm.objectForPrimaryKey('Task', "1724230688403-kv2er3pcj").mon = localSum;
-            setSum(localSum)
-        });
-    });
+          realm.objectForPrimaryKey('Task', "1724230688403-kv2er3pcj").mon = localSum;
+      });
+  });
     
     dispatch(setDb(tasks));
   }

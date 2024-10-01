@@ -101,7 +101,7 @@ function MyComponent() {
   const dat = useSelector(state => state.userReducer);
 
   data= dat.db1;
-  data = data.filter(item => item.status == 'done');
+  data = data.filter(item => item.status.startsWith('done'));
   const formatTime = (isoDateString) => {
     const date = new Date(isoDateString);
     let hours = date.getUTCHours() % 12 || 12;
