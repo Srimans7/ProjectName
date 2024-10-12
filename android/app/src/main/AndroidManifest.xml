@@ -10,7 +10,10 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+<<<<<<< HEAD
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+=======
+>>>>>>> c7139c75e1529d11662f0d5cdad3e40bda164827
      
 
     <application
@@ -47,6 +50,7 @@
             </intent-filter>
         </receiver>
 
+<<<<<<< HEAD
 
         <service
     android:name=".MyForegroundService"
@@ -60,6 +64,8 @@
 </service>
 
 
+=======
+>>>>>>> c7139c75e1529d11662f0d5cdad3e40bda164827
         <service
             android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationListenerService"
            android:exported="true" >

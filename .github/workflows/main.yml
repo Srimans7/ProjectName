@@ -1,0 +1,59 @@
+name: Android CI/CD
+
+on:
+  push:
+    branches:
+      - '**'  # Triggers on pushes to any branch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18'
+      
+      - name: Set up Ruby
+        uses: actions/setup-ruby@v1
+        with:
+          ruby-version: '3.x'
+
+      # Set GEM_HOME to a local directory to avoid permission issues
+      - name: Set GEM_HOME
+        run: |
+          echo "export GEM_HOME=$HOME/.gem" >> $GITHUB_ENV
+          echo "export PATH=$HOME/.gem/bin:$PATH" >> $GITHUB_ENV
+          
+      - name: Install Bundler and Gems
+        run: |
+          cd android
+          gem install bundler
+          bundle config set path 'vendor/bundle' # Install gems locally
+          bundle install --jobs 4 --retry 3
+      
+      - name: Install Node Dependencies
+        run: npm install --legacy-peer-deps
+      
+      - name: Set Execute Permissions for gradlew
+        run: |
+          cd android
+          chmod +x ./gradlew  # Set execute permissions
+      
+
+      
+      - name: Beta Release
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: |
+          cd android  # Change to the android directory
+          bundle exec fastlane beta  # Run Fastlane with `bundle exec`

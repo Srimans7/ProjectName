@@ -1,0 +1,21 @@
+default_platform(:android)
+
+platform :android do
+  desc "Runs all the tests"
+  lane :test do
+    gradle(task: "test")
+  end
+
+  desc "Submit a new Beta Build to Firebase App Distribution"
+  lane :beta do
+    
+    gradle(
+      task: "assembleRelease"
+    )
+    firebase_app_distribution(
+      app: "1:579341334740:android:ed0228454d8c4da3a0a341",
+      groups: "testing" # Replace with your Firebase tester group
+    )
+  end
+end
+ 
