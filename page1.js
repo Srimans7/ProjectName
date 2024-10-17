@@ -21,6 +21,7 @@ import {scheduleNotification} from "./notify";
 
 
 
+
 export default function HomeScreen({ navigation }) {
   const handlePress = () => {
     navigation.navigate('Second');
