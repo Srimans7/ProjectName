@@ -1,24 +1,32 @@
-import * as React from "react";
-import {useState, useEffect} from 'react';
-import { Alert, SafeAreaView, StyleSheet, Text, View, TouchableOpacity, ImageBackground, Button, Modal, Pressable, Image } from 'react-native';
-import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
+import React, { useState, useEffect } from 'react';
+import { Alert, View, Text, TouchableOpacity, Button, Modal, Pressable, ScrollView, StyleSheet } from 'react-native';
+import { launchCamera } from 'react-native-image-picker';
+import axios from 'axios';
 import storage from '@react-native-firebase/storage';
-
 import Sliders from './slider';
 import { useSelector, useDispatch } from 'react-redux';
 import { setDb } from '../redux/actions';
-import Task from './model';
-import { useRealm } from '../RealmProvider'; 
 import Add from '../2comp/add';
-import { ScrollView } from "react-native-gesture-handler";
-
-
 
 function MyComponent() {
-  const dat = useSelector(state => state.userReducer);
+  const data = useSelector(state => state.userReducer.db); // Fetch from Redux
+  const dispatch = useDispatch();
 
-  data= dat.db;
-  
+  // Fetch tasks from the server API on component mount
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        const response = await axios.get('http://ec2-54-221-130-21.compute-1.amazonaws.com:5000/tasks');
+        dispatch(setDb(response.data)); // Store fetched tasks in Redux
+      } catch (error) {
+        console.error('Error fetching tasks:', error);
+      }
+    };
+
+    fetchTasks();
+  }, [dispatch]);
+
+  // Format the time
   const formatTime = (isoDateString) => {
     const date = new Date(isoDateString);
     let hours = date.getUTCHours() % 12 || 12;
@@ -26,221 +34,133 @@ function MyComponent() {
     return `${hours.toString().padStart(2, '0')}:${minutes} ${date.getUTCHours() >= 12 ? 'PM' : 'AM'}`;
   };
 
-  const dispatch = useDispatch();
-  const realm = useRealm(); 
- 
-  useEffect(() => { async () => {
-    if (realm) {
-      const tasks = realm.objects(Task);
-   
-      dispatch(setDb(tasks));
-    } else{
-  
-    }
-}}, [realm, dispatch]);
-
-
-
-
-
   function Card({ time, task, id, status }) {
+    const [showModal, setShowModal] = useState(false);
+    const [imageUri, setImageUri] = useState([]);
+    const [img, setImg] = useState(['https://as2.ftcdn.net/v2/jpg/07/91/22/59/1000_F_791225927_caRPPH99D6D1iFonkCRmCGzkJPf36QDw.jpg']);
 
-    function uploader(){
-     setShowUp(false);
- 
-   }
- 
- 
- 
-   const [showModal, setShowModal] = useState(false);
-   const [showUp, setShowUp] = useState(true);
-   const [myImage,showMyImage] = useState(null);
-   const [percentage, setPercentage] = useState(0);
-   const handleCloseModal = () => setShowModal(false);
-   const [imageUri, setImageUri] = useState([]);
-   const { db} = useSelector(state => state.userReducer);
-   const [images,setImages] = useState();
-   const [img,setImg] = useState(['https://as2.ftcdn.net/v2/jpg/07/91/22/59/1000_F_791225927_caRPPH99D6D1iFonkCRmCGzkJPf36QDw.jpg']);
-   const [p,sp] = useState();
-
-  useEffect(() => {
-  
-    if (realm && realm.objectForPrimaryKey(Task, id) && realm.objectForPrimaryKey(Task, id).img[0]) {
-     
-      setImg(realm.objectForPrimaryKey(Task, id).img)
-    }
-  }, [realm, dispatch]);
-
-  useEffect(() => {
-    
-      uploadImage();
-    
-  }, [realm, dispatch, imageUri]);
-
- 
- 
-   const openCamera = () => {
-     launchCamera({ mediaType: 'photo' }, (response) => {
-       if (response.didCancel) {
-
-       } else if (response.errorCode) {
-         console.log('ImagePicker Error: ', response.errorMessage);
-       } else {
-        setImageUri((prevUris) => [...prevUris, response.assets[0].uri]);
-      
-        
-       }
-     });
-   };
- 
-   const openImageLibrary = () => {
-     launchImageLibrary({ mediaType: 'photo' }, (response) => {
-       if (response.didCancel) {
-
-       } else if (response.errorCode) {
-         console.log('ImagePicker Error: ', response.errorMessage);
-       } else {
-         setImageUri(response.assets[0].uri);
-       }
-     });
-   };
- 
- 
- 
- 
-   const uploadImage = async () => {
-    // Check if imageUri array is empty
-    if (imageUri.length === 0) return;
-  
-    // Get the last element in the imageUri array
-    const ur = imageUri[imageUri.length - 1];
-    const filename = ur.substring(ur.lastIndexOf('/') + 1);
-    const storageRef = storage().ref(`images/${filename}`);
-  
-    try {
-      await storageRef.putFile(ur);
-      const downloadURL = await storageRef.getDownloadURL();
-      updateTask(id, downloadURL);
-
-    } catch (error) {
-      console.error('Error uploading image: ', error);
-      Alert.alert('Upload Failed', 'Failed to upload image');
-    }
-  };
-  
- 
- 
- 
-   const sliderData = img[0] && img.map((uri, index) => ({
-     key: index,
-     imageUrl: uri,
-   }));
-
-
-   const updateTask = async (documentId, newValue) => {
-    if (realm) {
-      try {
-        const taskToUpdate = realm.objectForPrimaryKey(Task, documentId); // Assuming 'Task1' is the model name and _id is the primary key
-
-        if (taskToUpdate) {
-          realm.write(() => {
-            taskToUpdate.img.push(newValue); // Replace 'someProperty' with the actual property to update
-          });
-          setImg([...taskToUpdate.img]);
-        } else {
-          console.log('Task not found');
+    // Fetch task images from the API
+    useEffect(() => {
+      const fetchTask = async () => {
+        try {
+          const response = await axios.get(`http://ec2-54-221-130-21.compute-1.amazonaws.com:5000/task/${id}`);
+          setImg(response.data.img || []);
+        } catch (error) {
+          console.error('Error fetching task images:', error);
         }
-      } catch (err) {
-        console.error('Error updating task', err);
+      };
+
+      fetchTask();
+    }, [id]);
+
+    const openCamera = () => {
+      launchCamera({ mediaType: 'photo' }, (response) => {
+        if (!response.didCancel && !response.errorCode) {
+          const uri = response.assets[0].uri;
+          setImageUri((prevUris) => [...prevUris, uri]);
+        }
+      });
+    };
+
+    // Upload the image to Firebase and update the task via the API
+    const uploadImage = async () => {
+      if (imageUri.length === 0) return;
+
+      const uri = imageUri[imageUri.length - 1];
+      const filename = uri.substring(uri.lastIndexOf('/') + 1);
+      const storageRef = storage().ref(`images/${filename}`);
+
+      try {
+        await storageRef.putFile(uri);
+        const downloadURL = await storageRef.getDownloadURL();
+        updateTask(id, downloadURL);
+      } catch (error) {
+        console.error('Error uploading image:', error);
+        Alert.alert('Upload Failed', 'Failed to upload image');
       }
+    };
+
+    const updateTask = async (documentId, newImageURL) => {
+      try {
+        const response = await axios.put(`http://ec2-54-221-130-21.compute-1.amazonaws.com:5000/task/${documentId}`, {
+          img: [...img, newImageURL], // Add the new image URL to the existing images
+        });
+        setImg(response.data.img); // Update the state with the updated task images
+      } catch (error) {
+        console.error('Error updating task:', error);
+      }
+    };
+
+    const sliderData = img.map((uri, index) => ({
+      key: index,
+      imageUrl: uri,
+    }));
+
+    const compTask = async (documentId) => {
+      try {
+        await axios.put(`http://ec2-54-221-130-21.compute-1.amazonaws.com:5000/task/${documentId}`, {
+          status: `done-${getCurrentDateInDDMMYY()}`,
+        });
+        setShowModal(false);
+
+        // Fetch updated tasks
+        const updatedTasks = await axios.get('http://ec2-54-221-130-21.compute-1.amazonaws.com:5000/tasks');
+        dispatch(setDb(updatedTasks.data));
+      } catch (error) {
+        console.error('Error completing task:', error);
+      }
+    };
+
+    function getCurrentDateInDDMMYY() {
+      const date = new Date();
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = String(date.getFullYear()).slice(2);
+      return `${day}${month}${year}`;
     }
-  };
 
+    return (
+      <View style={styles.cardContainer}>
+        <View style={styles.cardDetails}>
+          <View style={styles.timeContainer}>
+            <Text style={styles.timeText}>{time}</Text>
+          </View>
+          <View style={status.startsWith('unver') ? styles.taskContainer2 : styles.taskContainer}>
+            <Text style={styles.taskText}>{task}</Text>
+            <TouchableOpacity onPress={() => setShowModal(true)}>
+              <View style={styles.circle} />
+            </TouchableOpacity>
+          </View>
+        </View>
 
-  function getCurrentDateInDDMMYY() {
-    const date = new Date();
-    const day = String(date.getDate()).padStart(2, '0'); // Get day and pad with 0 if needed
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // Get month and pad with 0 if needed
-    const year = String(date.getFullYear()).slice(2); // Get the last two digits of the year
-    return `${day}${month}${year}`;
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={showModal}
+          onRequestClose={() => setShowModal(false)}
+        >
+          <Pressable style={styles.overlay} onPress={() => setShowModal(false)}>
+            <View style={styles.modalContainer}>
+              <Button title="Open Camera" onPress={openCamera} />
+            </View>
+          </Pressable>
+          {sliderData.length > 0 && <Sliders data={sliderData} />}
+          <Add imageSource={require('../assets/o.png')} onPress={() => compTask(id)} />
+        </Modal>
+      </View>
+    );
   }
 
-  const compTask = async (documentId) => {
-    if (realm) {
-      try {
-        const taskToUpdate = realm.objectForPrimaryKey(Task, documentId); 
-  
-        if (taskToUpdate) {
-          realm.write(() => {
-
-            setShowModal(false);
-            taskToUpdate.status = '`done-${getCurrentDateInDDMMYY()}`';
-            const taskst = realm.objects(Task); 
-    dispatch(setDb(taskst));
-             // Replace 'someProperty' with the actual property to update
-          });
-  
-          const updatedTasks = realm.objects(Task);
-            dispatch(setDb([...updatedTasks]));
-          
-        } else {
-          console.log('Task not found');
-        }
-      } catch (err) {
-        console.error('Error updating task', err);
-      }
-    }
-  };
-
- 
-   return (
-     <View style={styles.cardContainer}>
-       <View style={styles.cardDetails}>
-         <View style={styles.timeContainer}>
-           <Text style={styles.timeText}>{time}</Text>
-         </View>
-         <View style={(status == 'unver') ? styles.taskContainer2 : ((status == 'over') ? styles.taskContainer3 : styles.taskContainer) }>
-           <Text style={styles.taskText}>{task}</Text>
-           <TouchableOpacity onPress={() => setShowModal(true)}>
-           <View style={styles.circle} />
-           </TouchableOpacity>
-         </View>
-       </View>
- 
-       <Modal
-         animationType="fade"
-         transparent={true}
-         visible={showModal}
-         onRequestClose={handleCloseModal}
-       >
-         
-         <Pressable style={styles.overlay} onPress={handleCloseModal}>
-           <View style={styles.modalContainer}> 
-           <Button title="Open Camera" onPress={openCamera} />
-           { // <Button title="Open Image Library" onPress={openImageLibrary} />
-           }
-           </View>
-         </Pressable>
- 
-         {<Sliders data = {sliderData}/>}
-       
-        <Add
-          imageSource={require('../assets/o.png')}
-          onPress={() => compTask(id)}
-        />
-       </Modal>
-       
-     </View>
-   );
- }
   return (
     <View style={styles.wrapper}>
       <ScrollView>
-      {   [...data].sort((a, b) => new Date(a.date) - new Date(b.date)).map((item, index) => (
-        (item.status.startsWith('today') ) && 
-        <Card key={index} time={formatTime(item.date)} task={item.title} id={item._id} status = {item.status} />
-        
-      ))}
+        {data
+          .sort((a, b) => new Date(a.date) - new Date(b.date))
+          .map((item, index) => (
+            item.status.startsWith('today') && (
+              <Card key={index} time={formatTime(item.date)} task={item.title} id={item._id} status={item.status} />
+            )
+          ))}
       </ScrollView>
     </View>
   );
