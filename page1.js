@@ -11,10 +11,11 @@ import { createStackNavigator } from '@react-navigation/stack';
 import AddTask from './components/addTask';
 import { useSelector, useDispatch } from 'react-redux';
 import { setDb, setDb1, setTestFunction } from './redux/actions';
-import Realm from "realm";
+
 import Task from './components/model';
-import { useRealm } from './RealmProvider';
+
 import moment from 'moment';
+import axios from 'axios';
 
 import {scheduleNotification} from "./notify";
 
@@ -35,7 +36,7 @@ export default function HomeScreen({ navigation }) {
    
    
 
-const realm = useRealm();
+
 const today = moment().startOf('day');
 
 function convertUTCtoIST(utcDate) {
@@ -73,70 +74,98 @@ function extractDateFromStatus(status) {
 }
 
 useEffect(() => {
-  if (realm) {
-    const tasks = realm.objects('Task');
-    const prevSum = realm.objectForPrimaryKey('Task', "1724230688403-kv2er3pcj").mon;
-    let localSum = prevSum;
+  const fetchTasks = async () => {
+    try {
+      const response = await axios.get('http://ec2-54-221-130-21.compute-1.amazonaws.com:5000/tasks');  // Replace with your API URL
+      const tasks = response.data;
+     /* let localSum = 0;
 
-    const isSameDay = (date1, date2) => {
+      const prevSumResponse = await axios.get('http://ec2-54-221-130-21.compute-1.amazonaws.com:5000/task/1724230688403-kv2er3pcj');
+      let prevSum = prevSumResponse.data.mon;  // Assuming the API returns a `mon` field
+      localSum = prevSum; */
+
+      const today = new Date();
+
+      // Helper functions for date comparison
+      const isSameDay = (date1, date2) => {
         return date1.getFullYear() === date2.getFullYear() &&
                date1.getMonth() === date2.getMonth() &&
                date1.getDate() === date2.getDate();
-    };
+      };
 
-    const isBeforeDay = (date1, date2) => {
+      const isBeforeDay = (date1, date2) => {
         return date1.getMonth() <= date2.getMonth() &&
                date1.getDate() < date2.getDate();
-    };
+      };
 
-    realm.write(() => {
-      tasks.forEach(task => {
-          const taskDate = moment(task.date);
-          const isRepeatable = task.week && task.week.length > 0;
-          const currentDayOfWeek = moment().format('ddd');
-          const isScheduledToday = task.status.startsWith('today-') && extractDateFromStatus(task.status).getTime() === today.toDate().getTime();
+      // Iterate through tasks and update statuses
+      tasks.forEach(async (task) => {
+        const taskDate = moment(task.date);
+        const isRepeatable = task.week && task.week.length > 0;
+        const currentDayOfWeek = moment().format('ddd');
+        const isScheduledToday = task.status.startsWith('today-') &&
+          extractDateFromStatus(task.status).getTime() === today.getTime();
 
-          console.log(`Processing task: ${task.title}, date: ${taskDate.toString()}`);
-          console.log(`Repeatable: ${isRepeatable}, Status: ${task.status}`);
+        console.log(`Processing task: ${task.title}, date: ${taskDate.toString()}`);
+        console.log(`Repeatable: ${isRepeatable}, Status: ${task.status}`);
 
-          if (isRepeatable && task.week.includes(currentDayOfWeek) && !(task.status == `today-${getCurrentDateInDDMMYY()}`  && !(task.status == `done-${getCurrentDateInDDMMYY()}`))) {
-              if (task.status !== 'active') {
-                  localSum += task.mon;
-              }
-              task.status = `today-${getCurrentDateInDDMMYY()}`;
-              scheduleNotification(task.title, new Date(convertUTCtoIST(task.date)));
+        if (isRepeatable && task.week.includes(currentDayOfWeek) && 
+            !(task.status === `today-${getCurrentDateInDDMMYY()}` && task.status !== `done-${getCurrentDateInDDMMYY()}`)) {
+          if (task.status !== 'active') {
+          //  localSum += task.mon;
           }
+          task.status = `today-${getCurrentDateInDDMMYY()}`;  // Update status locally
 
-          else if (task.status === 'ver') {
-              if (isRepeatable) {
-                  task.status = 'active';
-              } else {
-                  realm.delete(task);
-              }
-          }  else if (isBeforeDay(taskDate.toDate(), today.toDate())) {
-              if (task.status.startsWith('today') || task.status === "undone") {
-                  localSum += task.mon;
-                  if (isRepeatable) {
-                      task.status = 'active';
-                  } else {
-                      realm.delete(task);
-                  }
-              }
-          }  else if (isSameDay(taskDate.toDate(), today.toDate())) {
-              if (task.status === 'undone') {
-                  task.status = `today-${getCurrentDateInDDMMYY()}`;
-              }  if (task.status === 'inactive') {
-                  task.status = 'active';
-              }
+          // Schedule a notification (replace with actual notification code)
+          scheduleNotification(task.title, new Date(convertUTCtoIST(task.date)));
+
+          // Update the task status in the database
+          await axios.put(`http://ec2-54-221-130-21.compute-1.amazonaws.com:5000task/${task._id}`, { status: task.status });
+        } else if (task.status === 'ver') {
+          if (isRepeatable) {
+            task.status = 'active';
+          } else {
+            // Delete the task via API
+            await axios.delete(`http://ec2-54-221-130-21.compute-1.amazonaws.com:5000/task/${task._id}`);
           }
+        } else if (isBeforeDay(taskDate.toDate(), today)) {
+          if (task.status.startsWith('today') || task.status === 'undone') {
+            localSum += task.mon;
+            if (isRepeatable) {
+              task.status = 'active';
+            } else {
+              // Delete the task via API
+              await axios.delete(`http://ec2-54-221-130-21.compute-1.amazonaws.com:5000/task/${task._id}`);
+            }
+          }
+        } else if (isSameDay(taskDate.toDate(), today)) {
+          if (task.status === 'undone') {
+            task.status = `today-${getCurrentDateInDDMMYY()}`;
+          }
+          if (task.status === 'inactive') {
+            task.status = 'active';
+          }
+          // Update the task status in the database
+          await axios.put(`http://ec2-54-221-130-21.compute-1.amazonaws.com:5000/task/${task._id}`, { status: task.status });
+        }
 
-          realm.objectForPrimaryKey('Task', "1724230688403-kv2er3pcj").mon = localSum;
       });
-  });
-    
-    dispatch(setDb(tasks));
-  }
-}, [realm, dispatch, showModal]); 
+
+      // Update the sum of 'mon' for the task with the specific ID
+    /*  await axios.put(`http://ec2-54-221-130-21.compute-1.amazonaws.com:5000/task/1724230688403-kv2er3pcj`, {
+        mon: localSum
+      }); */
+
+      // Dispatch the tasks to the store
+      dispatch(setDb(tasks));
+    } catch (error) {
+      console.error('Error fetching or updating tasks:', error);
+    }
+  };
+
+  // Call the fetchTasks function
+  fetchTasks();
+}, [dispatch, showModal]);
 
 
 

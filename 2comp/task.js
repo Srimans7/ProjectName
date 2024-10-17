@@ -11,27 +11,35 @@ import Add from './add';
 import { useSelector, useDispatch } from 'react-redux';
 import { setDb } from '../redux/actions';
 
-import { useRealm } from '../RealmProvider'; 
+ 
 
 
 function Card({ time, task, id }) {
-  const realm = useRealm();
+ 
   const dispatch = useDispatch();
 
   const [showModal, setShowModal] = useState(false);
   const [img, setImg] = useState([]);
 
   useEffect(() => {
-    // Fetch the images from the Realm database
-    if (realm) {
-      const task = realm.objectForPrimaryKey('Task1', id);
-      if (task && task.img) {
-        setImg(task.img);
+    const fetchTask = async () => {
+      try {
+        const response = await axios.get(`http://ec2-54-221-130-21.compute-1.amazonaws.com:5000/task/${id}`);  // Replace with your server URL
+        if (response.data && response.data.img) {
+          setImg(response.data.img);  // Assuming your server returns the `img` array
+        }
+      } catch (error) {
+        console.error('Error fetching task:', error);
       }
+    };
+  
+    if (id) {
+      fetchTask();  // Fetch task details when the component mounts
     }
-  }, [realm, id]);
+  }, [id]);
+  
 
-  const compTask = async (documentId) => {
+  const compTask = async (documentId) => {/*
     
     if (realm) {
       try {
@@ -52,8 +60,8 @@ function Card({ time, task, id }) {
       } catch (err) {
         console.error('Error deleting task', err);
       }
-    }
-  };
+    } */
+  }; 
 
   const sliderData = img.map((uri, index) => ({
     key: index,

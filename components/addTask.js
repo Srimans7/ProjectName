@@ -1,11 +1,9 @@
 import React, { useState } from "react";
-import { SafeAreaView, StyleSheet, Text, View, Switch, Image, TextInput, Pressable } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, View, TextInput, Pressable } from 'react-native';
 import DatePicker from 'react-native-date-picker';
 import LinearGradient from 'react-native-linear-gradient';
 import Slider from "@react-native-community/slider";
-import Realm from "realm";
-import Task from './model';
-import { useRealm } from '../RealmProvider';
+import axios from 'axios';  // Add Axios for API calls
 import { useDispatch } from 'react-redux';
 import { setDb } from '../redux/actions';
 import { scheduleNotification } from '../notify';
@@ -18,23 +16,7 @@ export default function AddTask() {
   const [week, setWeek] = useState([]);
   const [isEnabled, setIsEnabled] = useState(false);
 
-  const toggleSwitch = () => setIsEnabled(prev => !prev);
-
   const dispatch = useDispatch();
-
-  const mapValueToNonLinearScale = (value) => {
-    const maxSliderValue = 300;
-    const scaleFactor = 2;
-    const adjustedValue = 10 + Math.pow(value / maxSliderValue, scaleFactor) * maxSliderValue;
-    return Math.floor(adjustedValue);
-  };
-
-  const handleValueChange = (value) => {
-    const nonLinearValue = mapValueToNonLinearScale(value);
-    setMon(nonLinearValue);
-  };
-
-  const realm = useRealm();
 
   const toggleDay = (day) => {
     setWeek((prevWeek) => {
@@ -48,44 +30,64 @@ export default function AddTask() {
 
   const isSelected = (day) => week.includes(day);
 
+  // Convert UTC date to IST date
   function convertUTCtoIST(utcDate) {
-    // Create a new Date object from the UTC date string
     const date = new Date(utcDate);
-  
-    // Calculate IST offset from UTC: +5 hours and 30 minutes
-    const offset = 5 * 60 + 30; // 5 hours * 60 minutes + 30 minutes
-  
-    // Apply the IST offset (in milliseconds)
-    const istDate = new Date(date.getTime());
-  
-    return istDate;
+    return new Date(date.getTime() + (5 * 60 + 30) * 60 * 1000); // Add 5 hours 30 minutes
   }
 
-  async function connect() {
-    if(week.length == 0) scheduleNotification(title, new Date(convertUTCtoIST(date)));
-    const newDate = new Date(date);
-    newDate.setHours(newDate.getHours() + 5);
-    newDate.setMinutes(newDate.getMinutes() + 30);
-    
-    
-   await realm.write(() => {
-      realm.create(Task, {
-        _id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        date: newDate,
-        dur,
-        mon,
-        comp: 0,
-        title,
-        week,
-        status: week.length > 0? 'inactive' : 'undone',
-      });
-    });
+  // Map slider value to non-linear scale for "mon"
+  const mapValueToNonLinearScale = (value) => {
+    const maxSliderValue = 300;
+    const scaleFactor = 2;
+    const adjustedValue = 10 + Math.pow(value / maxSliderValue, scaleFactor) * maxSliderValue;
+    return Math.floor(adjustedValue);
+  };
 
-    const tasks = realm.objects(Task);
-    dispatch(setDb(tasks));
-    setDate(new Date());
-   
-  }
+  const handleValueChange = (value) => {
+    const nonLinearValue = mapValueToNonLinearScale(value);
+    setMon(nonLinearValue);
+  };
+
+  // Submit new task to the server
+  const submitTaskToServer = async () => {
+    const newDate = convertUTCtoIST(date);
+    
+    const newTask = {
+      date: newDate,
+      dur,
+      mon,
+      comp: 0,
+      title,
+      week,
+      status: week.length > 0 ? 'inactive' : 'undone',
+    };
+
+    try {
+      // Make POST request to add a new task to the server
+      const response = await axios.post('http://ec2-54-221-130-21.compute-1.amazonaws.com/task', newTask); // Replace with your server URL
+      console.log('Task added:', response.data);
+
+      // Dispatch the updated tasks to Redux
+      const tasksResponse = await axios.get('http://ec2-54-221-130-21.compute-1.amazonaws.com/tasks'); // Fetch updated tasks
+      dispatch(setDb(tasksResponse.data));
+
+      // Schedule notification if no repeat days are selected
+      if (week.length === 0) {
+        scheduleNotification(title, new Date(convertUTCtoIST(date)));
+      }
+
+      // Reset fields after submitting
+      setDate(new Date());
+      setDur(5);
+      setMon(10);
+      setTitle('');
+      setWeek([]);
+      
+    } catch (error) {
+      console.error('Error adding task:', error);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -97,11 +99,6 @@ export default function AddTask() {
       >
         <View style={styles.header}>
           <Text style={styles.headerText}>Add Task</Text>
-          <Image
-            resizeMode="contain"
-            source={{ uri: "https://cdn.builder.io/api/v1/image/assets/TEMP/27964fa6c828dcea498281636964f1ff242b8366789b33cddba81c917c00a400?apiKey=2a38c587787c4f68bb9ff72712a54e47&" }}
-            style={styles.headerIcon}
-          />
         </View>
 
         <TextInput
@@ -119,14 +116,6 @@ export default function AddTask() {
           style={styles.datePicker}
         />
 
-       { /* <Switch
-          trackColor={{ false: "#767577", true: "#81b0ff" }}
-          thumbColor={isEnabled ? "#f5dd4b" : "#f4f3f4"}
-          onValueChange={toggleSwitch}
-          value={isEnabled}
-          style={styles.switch}
-        /> */ }
-
         <View style={styles.sliderContainer}>
           <Text style={styles.sliderLabel}>{dur} mins</Text>
           <Slider
@@ -135,7 +124,7 @@ export default function AddTask() {
             maximumValue={60}
             step={1}
             value={dur}
-            onValueChange={(value) => setDur(value)}
+            onValueChange={setDur}
             minimumTrackTintColor="#1fb28a"
             maximumTrackTintColor="#d3d3d3"
             thumbTintColor="#1fb28a"
@@ -173,7 +162,7 @@ export default function AddTask() {
           ))}
         </View>
 
-        <Pressable style={styles.submitButton} onPress={connect}>
+        <Pressable style={styles.submitButton} onPress={submitTaskToServer}>
           <Text style={styles.submitButtonText}>Submit</Text>
         </Pressable>
       </LinearGradient>
@@ -204,10 +193,6 @@ const styles = StyleSheet.create({
     color: "#009DCC",
     fontWeight: "700",
   },
-  headerIcon: {
-    width: 30,
-    height: 30,
-  },
   input: {
     borderRadius: 8,
     borderWidth: 1,
@@ -218,10 +203,6 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   datePicker: {
-    alignSelf: "center",
-    marginBottom: 15,
-  },
-  switch: {
     alignSelf: "center",
     marginBottom: 15,
   },
