@@ -1,115 +1,32 @@
-import * as React from "react";
-import {useState, useEffect} from 'react';
-import { Alert, SafeAreaView, StyleSheet, Text, View, TouchableOpacity, ImageBackground, Button, Modal, Pressable, Image } from 'react-native';
-import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
+import React, { useState, useEffect } from 'react';
+import { Alert, View, Text, TouchableOpacity, Button, Modal, Pressable, ScrollView, StyleSheet } from 'react-native';
+import { launchCamera } from 'react-native-image-picker';
+import axios from 'axios';
 import storage from '@react-native-firebase/storage';
-import firebase from './firebase';
-import Slider from '@react-native-community/slider';
-import RNFS from 'react-native-fs';
 import Sliders from './slider';
-import Add from './add';
 import { useSelector, useDispatch } from 'react-redux';
 import { setDb } from '../redux/actions';
-
- 
-
-
-function Card({ time, task, id }) {
- 
-  const dispatch = useDispatch();
-
-  const [showModal, setShowModal] = useState(false);
-  const [img, setImg] = useState([]);
-
-  useEffect(() => {
-    const fetchTask = async () => {
-      try {
-        const response = await axios.get(`http://ec2-54-221-130-21.compute-1.amazonaws.com:5000/task/${id}`);  // Replace with your server URL
-        if (response.data && response.data.img) {
-          setImg(response.data.img);  // Assuming your server returns the `img` array
-        }
-      } catch (error) {
-        console.error('Error fetching task:', error);
-      }
-    };
-  
-    if (id) {
-      fetchTask();  // Fetch task details when the component mounts
-    }
-  }, [id]);
-  
-
-  const compTask = async (documentId) => {/*
-    
-    if (realm) {
-      try {
-        const taskToUpdate = realm.objectForPrimaryKey('Task1', documentId);
-
-        if (taskToUpdate) {
-          setShowModal(false);
-          realm.write(() => {
-            realm.delete(taskToUpdate);
-          });
-          console.log('Successfully deleted');
-
-          const updatedTasks = realm.objects('Task1');
-          dispatch(setDb([...updatedTasks]));
-        } else {
-          console.log('Task1 not found');
-        }
-      } catch (err) {
-        console.error('Error deleting task', err);
-      }
-    } */
-  }; 
-
-  const sliderData = img.map((uri, index) => ({
-    key: index,
-    imageUrl: uri,
-  }));
-
-  return (
-    <View style={styles.cardContainer}>
-      <View style={styles.cardDetails}>
-        <View style={styles.timeContainer}>
-          <Text style={styles.timeText}>{time}</Text>
-        </View>
-        <View style={styles.taskContainer}>
-          <Text style={styles.taskText}>{task}</Text>
-          <TouchableOpacity onPress={() => setShowModal(true)}>
-            <View style={styles.circle} />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={showModal}
-        onRequestClose={() => setShowModal(false)}
-      >
-         {img.length > 0 && <Sliders data={sliderData} />}
-        <Pressable style={styles.overlay} onPress={() => setShowModal(false)}>
-          <View style={styles.modalContainer}>
-           
-           
-            <Add
-              imageSource={require('../assets/o.png')}
-              onPress={() => compTask(id)}
-            />
-          </View>
-        </Pressable>
-      </Modal>
-    </View>
-  );
-}
-
+import Add from '../2comp/add';
 
 function MyComponent() {
-  const dat = useSelector(state => state.userReducer);
+  const data = useSelector(state => state.userReducer.db); // Fetch from Redux
+  const dispatch = useDispatch();
 
-  data= dat.db1;
-  data = data.filter(item => item.status.startsWith('done'));
+  // Fetch tasks from the server API on component mount
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        const response = await axios.get('http://ec2-54-221-130-21.compute-1.amazonaws.com:5000/tasks');
+        dispatch(setDb(response.data)); // Store fetched tasks in Redux
+      } catch (error) {
+        console.error('Error fetching tasks:', error);
+      }
+    };
+
+    fetchTasks();
+  }, [dispatch]);
+
+  // Format the time
   const formatTime = (isoDateString) => {
     const date = new Date(isoDateString);
     let hours = date.getUTCHours() % 12 || 12;
@@ -117,11 +34,134 @@ function MyComponent() {
     return `${hours.toString().padStart(2, '0')}:${minutes} ${date.getUTCHours() >= 12 ? 'PM' : 'AM'}`;
   };
 
+  function Card({ time, task, id, status }) {
+    const [showModal, setShowModal] = useState(false);
+    const [imageUri, setImageUri] = useState([]);
+    const [img, setImg] = useState(['https://as2.ftcdn.net/v2/jpg/07/91/22/59/1000_F_791225927_caRPPH99D6D1iFonkCRmCGzkJPf36QDw.jpg']);
+
+    // Fetch task images from the API
+    useEffect(() => {
+      const fetchTask = async () => {
+        try {
+          const response = await axios.get(`http://ec2-54-221-130-21.compute-1.amazonaws.com:5000/task/${id}`);
+          setImg(response.data.img || []);
+        } catch (error) {
+          console.error('Error fetching task images:', error);
+        }
+      };
+
+      fetchTask();
+    }, [id]);
+
+    const openCamera = () => {
+      launchCamera({ mediaType: 'photo' }, (response) => {
+        if (!response.didCancel && !response.errorCode) {
+          const uri = response.assets[0].uri;
+          setImageUri((prevUris) => [...prevUris, uri]);
+        }
+      });
+    };
+
+    // Upload the image to Firebase and update the task via the API
+    const uploadImage = async () => {
+      if (imageUri.length === 0) return;
+
+      const uri = imageUri[imageUri.length - 1];
+      const filename = uri.substring(uri.lastIndexOf('/') + 1);
+      const storageRef = storage().ref(`images/${filename}`);
+
+      try {
+        await storageRef.putFile(uri);
+        const downloadURL = await storageRef.getDownloadURL();
+        updateTask(id, downloadURL);
+      } catch (error) {
+        console.error('Error uploading image:', error);
+        Alert.alert('Upload Failed', 'Failed to upload image');
+      }
+    };
+
+    const updateTask = async (documentId, newImageURL) => {
+      try {
+        const response = await axios.put(`http://ec2-54-221-130-21.compute-1.amazonaws.com:5000/task/${documentId}`, {
+          img: [...img, newImageURL], // Add the new image URL to the existing images
+        });
+        setImg(response.data.img); // Update the state with the updated task images
+      } catch (error) {
+        console.error('Error updating task:', error);
+      }
+    };
+
+    const sliderData = img.map((uri, index) => ({
+      key: index,
+      imageUrl: uri,
+    }));
+
+    const compTask = async (documentId) => {
+      try {
+        await axios.put(`http://ec2-54-221-130-21.compute-1.amazonaws.com:5000/task/${documentId}`, {
+          status: `done-${getCurrentDateInDDMMYY()}`,
+        });
+        setShowModal(false);
+
+        // Fetch updated tasks
+        const updatedTasks = await axios.get('http://ec2-54-221-130-21.compute-1.amazonaws.com:5000/tasks');
+        dispatch(setDb(updatedTasks.data));
+      } catch (error) {
+        console.error('Error completing task:', error);
+      }
+    };
+
+    function getCurrentDateInDDMMYY() {
+      const date = new Date();
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = String(date.getFullYear()).slice(2);
+      return `${day}${month}${year}`;
+    }
+
+    return (
+      <View style={styles.cardContainer}>
+        <View style={styles.cardDetails}>
+          <View style={styles.timeContainer}>
+            <Text style={styles.timeText}>{time}</Text>
+          </View>
+          <View style={status.startsWith('unver') ? styles.taskContainer2 : styles.taskContainer}>
+            <Text style={styles.taskText}>{task}</Text>
+            <TouchableOpacity onPress={() => setShowModal(true)}>
+              <View style={styles.circle} />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={showModal}
+          onRequestClose={() => setShowModal(false)}
+        >
+          <Pressable style={styles.overlay} onPress={() => setShowModal(false)}>
+            <View style={styles.modalContainer}>
+              <Button title="Open Camera" onPress={openCamera} />
+            </View>
+          </Pressable>
+          {sliderData.length > 0 && <Sliders data={sliderData} />}
+          <Add imageSource={require('../assets/o.png')} onPress={() => compTask(id)} />
+        </Modal>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.wrapper}>
-      {[...data].sort((a, b) => new Date(a.date) - new Date(b.date)).map((item, index) => (
-        <Card key={index} time={formatTime(item.date)} task={item.title} id = {item._id} />
-      ))}
+      <ScrollView>
+        {data
+          .sort((a, b) => new Date(a.date) - new Date(b.date))
+          .map((item, index) => (
+            item.status.startsWith('today') && (
+              <Card key={index} time={formatTime(item.date)} task={item.title} id={item._id} status={item.status} />
+            )
+          ))}
+      </ScrollView>
     </View>
   );
 }
@@ -177,6 +217,28 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: "space-between",
     color: "#009DCC",
+    marginTop: 0,
+    font: "600 24px Inter, sans-serif ",
+  },
+  taskContainer2: {
+    paddingLeft: 10,
+    paddingRight: 10,
+    width: "100%",
+    flexDirection: 'row',
+    justifyContent: "space-between",
+    color: "#009DCC",
+    backgroundColor: '#FFFF00',
+    marginTop: 0,
+    font: "600 24px Inter, sans-serif ",
+  },
+  taskContainer3: {
+    paddingLeft: 10,
+    paddingRight: 10,
+    width: "100%",
+    flexDirection: 'row',
+    justifyContent: "space-between",
+    color: "#009DCC",
+    backgroundColor: '#FF8488',
     marginTop: 0,
     font: "600 24px Inter, sans-serif ",
   },

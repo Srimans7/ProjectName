@@ -79,11 +79,13 @@ useEffect(() => {
     try {
       const response = await axios.get('http://ec2-54-221-130-21.compute-1.amazonaws.com:5000/tasks');  // Replace with your API URL
       const tasks = response.data;
-     /* let localSum = 0;
+      console.log ("TASKS  : ", tasks)
+      let localSum = 0;
 
-      const prevSumResponse = await axios.get('http://ec2-54-221-130-21.compute-1.amazonaws.com:5000/task/1724230688403-kv2er3pcj');
-      let prevSum = prevSumResponse.data.mon;  // Assuming the API returns a `mon` field
-      localSum = prevSum; */
+     // const prevSumResponse = await axios.get('http://ec2-54-221-130-21.compute-1.amazonaws.com:5000/task/1724230688403-kv2er3pcj');
+     const prevSumResponse = tasks.find((task) => task._id === "1724230688403-kv2er3pcj");
+      let prevSum = prevSumResponse.mon;  // Assuming the API returns a `mon` field
+      localSum = prevSum; 
 
       const today = new Date();
 
@@ -113,7 +115,7 @@ useEffect(() => {
         if (isRepeatable && task.week.includes(currentDayOfWeek) && 
             !(task.status === `today-${getCurrentDateInDDMMYY()}` && task.status !== `done-${getCurrentDateInDDMMYY()}`)) {
           if (task.status !== 'active') {
-          //  localSum += task.mon;
+           localSum += task.mon;
           }
           task.status = `today-${getCurrentDateInDDMMYY()}`;  // Update status locally
 
@@ -121,7 +123,7 @@ useEffect(() => {
           scheduleNotification(task.title, new Date(convertUTCtoIST(task.date)));
 
           // Update the task status in the database
-          await axios.put(`http://ec2-54-221-130-21.compute-1.amazonaws.com:5000task/${task._id}`, { status: task.status });
+          await axios.put(`http://ec2-54-221-130-21.compute-1.amazonaws.com:5000/task/${task._id}`, { status: task.status });
         } else if (task.status === 'ver') {
           if (isRepeatable) {
             task.status = 'active';
@@ -153,9 +155,10 @@ useEffect(() => {
       });
 
       // Update the sum of 'mon' for the task with the specific ID
-    /*  await axios.put(`http://ec2-54-221-130-21.compute-1.amazonaws.com:5000/task/1724230688403-kv2er3pcj`, {
+      await axios.put(`http://ec2-54-221-130-21.compute-1.amazonaws.com:5000/task/1724230688403-kv2er3pcj`, {
         mon: localSum
-      }); */
+      }); 
+      setSum(localSum);
 
       // Dispatch the tasks to the store
       dispatch(setDb(tasks));
