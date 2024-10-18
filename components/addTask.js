@@ -51,6 +51,7 @@ export default function AddTask() {
 
   // Submit new task to the server
   const submitTaskToServer = async () => {
+    console.log("BUTTONED")
     const newDate = convertUTCtoIST(date);
     
     const newTask = {
@@ -65,11 +66,11 @@ export default function AddTask() {
 
     try {
       // Make POST request to add a new task to the server
-      const response = await axios.post('http://ec2-54-221-130-21.compute-1.amazonaws.com/task', newTask); // Replace with your server URL
+      const response = await axios.post('http://ec2-54-221-130-21.compute-1.amazonaws.com:5000/task', newTask); // Replace with your server URL
       console.log('Task added:', response.data);
 
       // Dispatch the updated tasks to Redux
-      const tasksResponse = await axios.get('http://ec2-54-221-130-21.compute-1.amazonaws.com/tasks'); // Fetch updated tasks
+      const tasksResponse = await axios.get('http://ec2-54-221-130-21.compute-1.amazonaws.com:5000/tasks'); // Fetch updated tasks
       dispatch(setDb(tasksResponse.data));
 
       // Schedule notification if no repeat days are selected

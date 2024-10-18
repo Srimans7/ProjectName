@@ -39,19 +39,13 @@ function MyComponent() {
     const [imageUri, setImageUri] = useState([]);
     const [img, setImg] = useState(['https://as2.ftcdn.net/v2/jpg/07/91/22/59/1000_F_791225927_caRPPH99D6D1iFonkCRmCGzkJPf36QDw.jpg']);
 
-    // Fetch task images from the API
     useEffect(() => {
-      const fetchTask = async () => {
-        try {
-          const response = await axios.get(`http://ec2-54-221-130-21.compute-1.amazonaws.com:5000/task/${id}`);
-          setImg(response.data.img || []);
-        } catch (error) {
-          console.error('Error fetching task images:', error);
-        }
-      };
-
-      fetchTask();
-    }, [id]);
+      // Find the task from the Redux store using its ID
+      const currentTask = data.find((task) => task._id === id);
+      if (currentTask && currentTask.img) {
+        setImg(currentTask.img); // Set images from the task
+      }
+    }, [id, data]);
 
     const openCamera = () => {
       launchCamera({ mediaType: 'photo' }, (response) => {
@@ -82,8 +76,9 @@ function MyComponent() {
 
     const updateTask = async (documentId, newImageURL) => {
       try {
+        const updatedImages = [...img, newImageURL]; // Add the new image URL to the existing images
         const response = await axios.put(`http://ec2-54-221-130-21.compute-1.amazonaws.com:5000/task/${documentId}`, {
-          img: [...img, newImageURL], // Add the new image URL to the existing images
+          img: updatedImages,
         });
         setImg(response.data.img); // Update the state with the updated task images
       } catch (error) {
@@ -157,7 +152,7 @@ function MyComponent() {
         {data
           .sort((a, b) => new Date(a.date) - new Date(b.date))
           .map((item, index) => (
-            item.status.startsWith('today') && (
+            item.status &&   item.status.startsWith('today') && (
               <Card key={index} time={formatTime(item.date)} task={item.title} id={item._id} status={item.status} />
             )
           ))}
