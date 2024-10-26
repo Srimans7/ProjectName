@@ -77,12 +77,12 @@ function extractDateFromStatus(status) {
 useEffect(() => {
   const fetchTasks = async () => {
     try {
-      const response = await axios.get('http://ec2-54-221-130-21.compute-1.amazonaws.com:5000/tasks');  // Replace with your API URL
+      const response = await axios.get('http://ec2-50-19-179-98.compute-1.amazonaws.com:3000/tasks');  // Replace with your API URL
       const tasks = response.data;
       console.log ("TASKS  : ", tasks)
       let localSum = 0;
 
-     // const prevSumResponse = await axios.get('http://ec2-54-221-130-21.compute-1.amazonaws.com:5000/task/1724230688403-kv2er3pcj');
+     // const prevSumResponse = await axios.get('http://ec2-50-19-179-98.compute-1.amazonaws.com:3000/task/1724230688403-kv2er3pcj');
      const prevSumResponse = tasks.find((task) => task._id === "1724230688403-kv2er3pcj");
       let prevSum = prevSumResponse.mon;  // Assuming the API returns a `mon` field
       localSum = prevSum; 
@@ -113,7 +113,7 @@ useEffect(() => {
         console.log(`Repeatable: ${isRepeatable}, Status: ${task.status}`);
 
         if (isRepeatable && task.week.includes(currentDayOfWeek) && 
-            !(task.status === `today-${getCurrentDateInDDMMYY()}` && task.status !== `done-${getCurrentDateInDDMMYY()}`)) {
+            !(task.status === `today-${getCurrentDateInDDMMYY()}` || task.status === `done-${getCurrentDateInDDMMYY()}`)) {
           if (task.status !== 'active') {
            localSum += task.mon;
           }
@@ -123,13 +123,13 @@ useEffect(() => {
           scheduleNotification(task.title, new Date(convertUTCtoIST(task.date)));
 
           // Update the task status in the database
-          await axios.put(`http://ec2-54-221-130-21.compute-1.amazonaws.com:5000/task/${task._id}`, { status: task.status });
+          await axios.put(`http://ec2-50-19-179-98.compute-1.amazonaws.com:3000/task/${task._id}`, { status: task.status });
         } else if (task.status === 'ver') {
           if (isRepeatable) {
             task.status = 'active';
           } else {
             // Delete the task via API
-            await axios.delete(`http://ec2-54-221-130-21.compute-1.amazonaws.com:5000/task/${task._id}`);
+            await axios.delete(`http://ec2-50-19-179-98.compute-1.amazonaws.com:3000/task/${task._id}`);
           }
         } else if (isBeforeDay(taskDate.toDate(), today)) {
           if (task.status.startsWith('today') || task.status === 'undone') {
@@ -138,7 +138,7 @@ useEffect(() => {
               task.status = 'active';
             } else {
               // Delete the task via API
-              await axios.delete(`http://ec2-54-221-130-21.compute-1.amazonaws.com:5000/task/${task._id}`);
+              await axios.delete(`http://ec2-50-19-179-98.compute-1.amazonaws.com:3000/task/${task._id}`);
             }
           }
         } else if (isSameDay(taskDate.toDate(), today)) {
@@ -149,13 +149,13 @@ useEffect(() => {
             task.status = 'active';
           }
           // Update the task status in the database
-          await axios.put(`http://ec2-54-221-130-21.compute-1.amazonaws.com:5000/task/${task._id}`, { status: task.status });
+          await axios.put(`http://ec2-50-19-179-98.compute-1.amazonaws.com:3000/task/${task._id}`, { status: task.status });
         }
 
       });
 
       // Update the sum of 'mon' for the task with the specific ID
-      await axios.put(`http://ec2-54-221-130-21.compute-1.amazonaws.com:5000/task/1724230688403-kv2er3pcj`, {
+      await axios.put(`http://ec2-50-19-179-98.compute-1.amazonaws.com:3000/task/1724230688403-kv2er3pcj`, {
         mon: localSum
       }); 
       setSum(localSum);

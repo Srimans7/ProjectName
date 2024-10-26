@@ -16,7 +16,7 @@ function MyComponent() {
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const response = await axios.get('http://ec2-54-221-130-21.compute-1.amazonaws.com:5000/tasks');
+        const response = await axios.get('http://ec2-50-19-179-98.compute-1.amazonaws.com:3000/tasks');
         dispatch(setDb(response.data)); // Store fetched tasks in Redux
       } catch (error) {
         console.error('Error fetching tasks:', error);
@@ -34,40 +34,39 @@ function MyComponent() {
     return `${hours.toString().padStart(2, '0')}:${minutes} ${date.getUTCHours() >= 12 ? 'PM' : 'AM'}`;
   };
 
-  function Card({ time, task, id, status }) {
+  function Card({ time, task, id, status, images }) {
     const [showModal, setShowModal] = useState(false);
     const [imageUri, setImageUri] = useState([]);
-    const [img, setImg] = useState(['https://as2.ftcdn.net/v2/jpg/07/91/22/59/1000_F_791225927_caRPPH99D6D1iFonkCRmCGzkJPf36QDw.jpg']);
-
-    useEffect(() => {
-      // Find the task from the Redux store using its ID
-      const currentTask = data.find((task) => task._id === id);
-      if (currentTask && currentTask.img) {
-        setImg(currentTask.img); // Set images from the task
-      }
-    }, [id, data]);
+    const [img, setImg] = useState(images);
+    
+    
+    
 
     const openCamera = () => {
       launchCamera({ mediaType: 'photo' }, (response) => {
         if (!response.didCancel && !response.errorCode) {
           const uri = response.assets[0].uri;
-          setImageUri((prevUris) => [...prevUris, uri]);
+         // setImageUri((prevUris) => [...prevUris, uri]);
+          setImg([uri])
+          setImageUri([uri])
+          uploadImage(uri)
         }
       });
     };
 
     // Upload the image to Firebase and update the task via the API
-    const uploadImage = async () => {
-      if (imageUri.length === 0) return;
-
-      const uri = imageUri[imageUri.length - 1];
+    const uploadImage = async (uri) => {
+      
       const filename = uri.substring(uri.lastIndexOf('/') + 1);
       const storageRef = storage().ref(`images/${filename}`);
 
       try {
         await storageRef.putFile(uri);
         const downloadURL = await storageRef.getDownloadURL();
+        console.log("downloadURL :", downloadURL)
+        
         updateTask(id, downloadURL);
+        Alert.alert('Uploaded', 'image');
       } catch (error) {
         console.error('Error uploading image:', error);
         Alert.alert('Upload Failed', 'Failed to upload image');
@@ -76,30 +75,42 @@ function MyComponent() {
 
     const updateTask = async (documentId, newImageURL) => {
       try {
-        const updatedImages = [...img, newImageURL]; // Add the new image URL to the existing images
-        const response = await axios.put(`http://ec2-54-221-130-21.compute-1.amazonaws.com:5000/task/${documentId}`, {
+        const updatedImages = [newImageURL]; // Add the new image URL to the existing images
+        console.log("updatedImages :", updatedImages)
+        
+        const response = await axios.put(`http://ec2-50-19-179-98.compute-1.amazonaws.com:3000/task/${documentId}`, {
           img: updatedImages,
         });
-        setImg(response.data.img); // Update the state with the updated task images
+    
+        console.log('API Response:', response.data); // Log the response to check if the API returns the updated data
+    
+        // Fetch the updated task directly or update the state if the response contains the updated data
+        if (response.data && response.data.img) {
+          setImg(response.data.img); // Update the state with the updated task images
+        } else {
+          console.error('API did not return the updated images');
+        }
+    
       } catch (error) {
         console.error('Error updating task:', error);
       }
     };
+    
 
-    const sliderData = img.map((uri, index) => ({
+    const sliderData = img && img.map((uri, index) => ({
       key: index,
       imageUrl: uri,
     }));
 
     const compTask = async (documentId) => {
       try {
-        await axios.put(`http://ec2-54-221-130-21.compute-1.amazonaws.com:5000/task/${documentId}`, {
+        await axios.put(`http://ec2-50-19-179-98.compute-1.amazonaws.com:3000/task/${documentId}`, {
           status: `done-${getCurrentDateInDDMMYY()}`,
         });
         setShowModal(false);
 
         // Fetch updated tasks
-        const updatedTasks = await axios.get('http://ec2-54-221-130-21.compute-1.amazonaws.com:5000/tasks');
+        const updatedTasks = await axios.get('http://ec2-50-19-179-98.compute-1.amazonaws.com:3000/tasks');
         dispatch(setDb(updatedTasks.data));
       } catch (error) {
         console.error('Error completing task:', error);
@@ -153,7 +164,7 @@ function MyComponent() {
           .sort((a, b) => new Date(a.date) - new Date(b.date))
           .map((item, index) => (
             item.status &&   item.status.startsWith('today') && (
-              <Card key={index} time={formatTime(item.date)} task={item.title} id={item._id} status={item.status} />
+              <Card key={index} time={formatTime(item.date)} task={item.title} id={item._id} status={item.status} images={item.img} />
             )
           ))}
       </ScrollView>
