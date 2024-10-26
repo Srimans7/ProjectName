@@ -98,9 +98,7 @@ function MyComponent() {
 
     const compTask = async (documentId) => {
       try {
-        await axios.put(`http://ec2-54-221-130-21.compute-1.amazonaws.com:5000/task/${documentId}`, {
-          status: `done-${getCurrentDateInDDMMYY()}`,
-        });
+         await axios.delete(`http://ec2-50-19-179-98.compute-1.amazonaws.com:5000/task/${documentId}`);
         setShowModal(false);
 
         // Fetch updated tasks
@@ -157,7 +155,7 @@ function MyComponent() {
         {data
           .sort((a, b) => new Date(a.date) - new Date(b.date))
           .map((item, index) => (
-            item.status.startsWith('today') && (
+            item.status.startsWith('done') && (
               <Card key={index} time={formatTime(item.date)} task={item.title} id={item._id} status={item.status} />
             )
           ))}
