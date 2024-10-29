@@ -16,7 +16,7 @@ function MyComponent() {
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const response = await axios.get('http://ec2-54-221-130-21.compute-1.amazonaws.com:5000/tasks');
+        const response = await axios.get('http://ec2-50-19-179-98.compute-1.amazonaws.com:3000/tasks');
         dispatch(setDb(response.data)); // Store fetched tasks in Redux
       } catch (error) {
         console.error('Error fetching tasks:', error);
@@ -34,19 +34,19 @@ function MyComponent() {
     return `${hours.toString().padStart(2, '0')}:${minutes} ${date.getUTCHours() >= 12 ? 'PM' : 'AM'}`;
   };
 
-  function Card({ time, task, id, status }) {
+  function Card({ time, task, id, status, images }) {
     const [showModal, setShowModal] = useState(false);
     const [imageUri, setImageUri] = useState([]);
-    const [img, setImg] = useState(['https://as2.ftcdn.net/v2/jpg/07/91/22/59/1000_F_791225927_caRPPH99D6D1iFonkCRmCGzkJPf36QDw.jpg']);
+    const [img, setImg] = useState([]);
 
     // Fetch task images from the API
     useEffect(() => {
       const fetchTask = async () => {
         try {
-          const response = await axios.get(`http://ec2-54-221-130-21.compute-1.amazonaws.com:5000/task/${id}`);
-          setImg(response.data.img || []);
+         
+          setImg(images);
         } catch (error) {
-          console.error('Error fetching task images:', error);
+          console.error('Error fetching task imags:', error);
         }
       };
 
@@ -82,7 +82,7 @@ function MyComponent() {
 
     const updateTask = async (documentId, newImageURL) => {
       try {
-        const response = await axios.put(`http://ec2-54-221-130-21.compute-1.amazonaws.com:5000/task/${documentId}`, {
+        const response = await axios.put(`http://ec2-50-19-179-98.compute-1.amazonaws.com:3000/task/${documentId}`, {
           img: [...img, newImageURL], // Add the new image URL to the existing images
         });
         setImg(response.data.img); // Update the state with the updated task images
@@ -97,12 +97,13 @@ function MyComponent() {
     }));
 
     const compTask = async (documentId) => {
+      console.log("Deleted");
       try {
-         await axios.delete(`http://ec2-50-19-179-98.compute-1.amazonaws.com:5000/task/${documentId}`);
+         await axios.delete(`http://ec2-50-19-179-98.compute-1.amazonaws.com:3000/task/${documentId}`);
         setShowModal(false);
 
         // Fetch updated tasks
-        const updatedTasks = await axios.get('http://ec2-54-221-130-21.compute-1.amazonaws.com:5000/tasks');
+        const updatedTasks = await axios.get('http://ec2-50-19-179-98.compute-1.amazonaws.com:3000/tasks');
         dispatch(setDb(updatedTasks.data));
       } catch (error) {
         console.error('Error completing task:', error);
@@ -156,7 +157,7 @@ function MyComponent() {
           .sort((a, b) => new Date(a.date) - new Date(b.date))
           .map((item, index) => (
             item.status.startsWith('done') && (
-              <Card key={index} time={formatTime(item.date)} task={item.title} id={item._id} status={item.status} />
+              <Card key={index} time={formatTime(item.date)} task={item.title} id={item._id} status={item.status} images={item.img} />
             )
           ))}
       </ScrollView>
