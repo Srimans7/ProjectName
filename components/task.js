@@ -16,7 +16,7 @@ function MyComponent() {
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const response = await axios.get('http://ec2-50-19-179-98.compute-1.amazonaws.com:5000/tasks');
+        const response = await axios.get('http://ec2-50-19-179-98.compute-1.amazonaws.com:3000/tasks');
         dispatch(setDb(response.data)); // Store fetched tasks in Redux
       } catch (error) {
         console.error('Error fetching tasks:', error);
@@ -78,7 +78,7 @@ function MyComponent() {
         const updatedImages = [newImageURL]; // Add the new image URL to the existing images
         console.log("updatedImages :", updatedImages)
         
-        const response = await axios.put(`http://ec2-50-19-179-98.compute-1.amazonaws.com:5000/task/${documentId}`, {
+        const response = await axios.put(`http://ec2-50-19-179-98.compute-1.amazonaws.com:3000/task/${documentId}`, {
           img: updatedImages,
         });
     
@@ -104,13 +104,13 @@ function MyComponent() {
 
     const compTask = async (documentId) => {
       try {
-        await axios.put(`http://ec2-50-19-179-98.compute-1.amazonaws.com:5000/task/${documentId}`, {
+        await axios.put(`http://ec2-50-19-179-98.compute-1.amazonaws.com:3000/task/${documentId}`, {
           status: `done-${getCurrentDateInDDMMYY()}`,
         });
         setShowModal(false);
 
         // Fetch updated tasks
-        const updatedTasks = await axios.get('http://ec2-50-19-179-98.compute-1.amazonaws.com:5000/tasks');
+        const updatedTasks = await axios.get('http://ec2-50-19-179-98.compute-1.amazonaws.com:3000/tasks');
         dispatch(setDb(updatedTasks.data));
       } catch (error) {
         console.error('Error completing task:', error);
