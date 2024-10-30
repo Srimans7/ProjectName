@@ -5,11 +5,11 @@ import axios from 'axios';
 import storage from '@react-native-firebase/storage';
 import Sliders from './slider';
 import { useSelector, useDispatch } from 'react-redux';
-import { setDb } from '../redux/actions';
+import { setDb1 } from '../redux/actions';
 import Add from '../2comp/add';
 
 function MyComponent() {
-  const data = useSelector(state => state.userReducer.db); // Fetch from Redux
+  const data = useSelector(state => state.userReducer.db1); // Fetch from Redux
   const dispatch = useDispatch();
 
   // Fetch tasks from the server API on component mount
@@ -17,7 +17,7 @@ function MyComponent() {
     const fetchTasks = async () => {
       try {
         const response = await axios.get('http://ec2-50-19-179-98.compute-1.amazonaws.com:3000/tasks');
-        dispatch(setDb(response.data)); // Store fetched tasks in Redux
+        dispatch(setDb1(response.data)); // Store fetched tasks in Redux
       } catch (error) {
         console.error('Error fetching tasks:', error);
       }
@@ -43,7 +43,7 @@ function MyComponent() {
     useEffect(() => {
       const fetchTask = async () => {
         try {
-         
+         console.log("IMAGES ", images)
           setImg(images);
         } catch (error) {
           console.error('Error fetching task imags:', error);
@@ -104,7 +104,7 @@ function MyComponent() {
 
         // Fetch updated tasks
         const updatedTasks = await axios.get('http://ec2-50-19-179-98.compute-1.amazonaws.com:3000/tasks');
-        dispatch(setDb(updatedTasks.data));
+        dispatch(setDb1(updatedTasks.data));
       } catch (error) {
         console.error('Error completing task:', error);
       }
@@ -139,9 +139,7 @@ function MyComponent() {
           onRequestClose={() => setShowModal(false)}
         >
           <Pressable style={styles.overlay} onPress={() => setShowModal(false)}>
-            <View style={styles.modalContainer}>
-              <Button title="Open Camera" onPress={openCamera} />
-            </View>
+            
           </Pressable>
           {sliderData.length > 0 && <Sliders data={sliderData} />}
           <Add imageSource={require('../assets/o.png')} onPress={() => compTask(id)} />
