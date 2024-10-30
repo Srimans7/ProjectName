@@ -16,7 +16,7 @@ function MyComponent() {
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const response = await axios.get('http://ec2-50-19-179-98.compute-1.amazonaws.com:3000/tasks');
+        const response = await axios.get('http://ec2-50-19-179-98.compute-1.amazonaws.com:5000/tasks');
         dispatch(setDb1(response.data)); // Store fetched tasks in Redux
       } catch (error) {
         console.error('Error fetching tasks:', error);
@@ -43,7 +43,7 @@ function MyComponent() {
     useEffect(() => {
       const fetchTask = async () => {
         try {
-         console.log("IMAGES ", images)
+         
           setImg(images);
         } catch (error) {
           console.error('Error fetching task imags:', error);
@@ -82,7 +82,7 @@ function MyComponent() {
 
     const updateTask = async (documentId, newImageURL) => {
       try {
-        const response = await axios.put(`http://ec2-50-19-179-98.compute-1.amazonaws.com:3000/task/${documentId}`, {
+        const response = await axios.put(`http://ec2-50-19-179-98.compute-1.amazonaws.com:5000/task/${documentId}`, {
           img: [...img, newImageURL], // Add the new image URL to the existing images
         });
         setImg(response.data.img); // Update the state with the updated task images
@@ -99,11 +99,11 @@ function MyComponent() {
     const compTask = async (documentId) => {
       console.log("Deleted");
       try {
-         await axios.delete(`http://ec2-50-19-179-98.compute-1.amazonaws.com:3000/task/${documentId}`);
+         await axios.delete(`http://ec2-50-19-179-98.compute-1.amazonaws.com:5000/task/${documentId}`);
         setShowModal(false);
 
         // Fetch updated tasks
-        const updatedTasks = await axios.get('http://ec2-50-19-179-98.compute-1.amazonaws.com:3000/tasks');
+        const updatedTasks = await axios.get('http://ec2-50-19-179-98.compute-1.amazonaws.com:5000/tasks');
         dispatch(setDb1(updatedTasks.data));
       } catch (error) {
         console.error('Error completing task:', error);
@@ -139,9 +139,11 @@ function MyComponent() {
           onRequestClose={() => setShowModal(false)}
         >
           <Pressable style={styles.overlay} onPress={() => setShowModal(false)}>
-            
+            <View style={styles.modalContainer}>
+            {sliderData.length > 0 && <Sliders data={sliderData} />}
+            </View>
           </Pressable>
-          {sliderData.length > 0 && <Sliders data={sliderData} />}
+         
           <Add imageSource={require('../assets/o.png')} onPress={() => compTask(id)} />
         </Modal>
       </View>
