@@ -1,31 +1,49 @@
-// LoginScreen.js
-import React from 'react';
-import { View, Text, Button, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Button, TextInput } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 
-const LoginScreen = ({ navigation }) => {
-  const handleLogin = () => {
-    // Simulate login action; navigate to the main app
-    navigation.replace("Home"); // Replace Login with Home screen
+export default function LoginScreen({ navigation }) {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleLogin = async () => {
+    try {
+      const response = await axios.post('http://10.0.2.2:3001/login', {
+        email,
+        password,
+      });
+      const { token } = response.data;
+
+      if (token) {
+        await AsyncStorage.setItem('userToken', token);
+        navigation.replace('Home');
+      } else {
+        console.log('Login failed');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+    }
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Login</Text>
-      <Button title="Log In" onPress={handleLogin} />
+    <View>
+      <TextInput
+        placeholder="Email"
+        value={email}
+        onChangeText={setEmail}
+      />
+      <TextInput
+        placeholder="Password"
+        value={password}
+        secureTextEntry
+        onChangeText={setPassword}
+      />
+      <Button title="Login" onPress={handleLogin} />
+      <Button
+        title="Register"
+        onPress={() => navigation.navigate('Register')}
+      />
     </View>
   );
-};
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  title: {
-    fontSize: 24,
-    marginBottom: 20,
-  },
-});
-
-export default LoginScreen;
+}

@@ -9,6 +9,7 @@ import LoginScreen from './LoginScreen'; // Import the login screen
 import { Provider } from 'react-redux';
 import { Store, persistor } from './redux/store';
 import { PersistGate } from 'redux-persist/integration/react';
+import RegisterScreen from './RegisterScreen';
 
 const Stack = createStackNavigator();
 
@@ -32,6 +33,7 @@ export default function App() {
                 animationTypeForReplace: isLoggedIn ? 'pop' : 'push',
               }}
             />
+             <Stack.Screen name="Register" component={RegisterScreen} />
             <Stack.Screen name="Home" component={HomeScreen} />
             <Stack.Screen name="Second" component={SecondScreen} />
           </Stack.Navigator>
