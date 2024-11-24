@@ -133,6 +133,7 @@ useEffect(() => {
             await api.delete(`http://10.0.2.2:3001/task/${task._id}`);
           }
         } else if (isBeforeDay(taskDate.toDate(), today)) {
+          
           if (task.status.startsWith('today') || task.status === 'undone') {
           //  localSum += task.mon;
             console.log("lose : " , task.mon, task.title)
@@ -140,10 +141,14 @@ useEffect(() => {
               task.status = 'active';
             } else {
               // Delete the task via API
-              await api.delete(`http://10.0.2.2:3001/task/${task._id}`);
+              
+              try{ await api.delete(`http://10.0.2.2:3001/task/${task._id}`);
+            }
+              catch(e) {console.log("not deleted ", e)}
             }
           }
-        } else if (isSameDay(taskDate.toDate(), today)) {
+        } else if (isSameDay(taskDate.toDate(), today)) { 
+       
           if (task.status === 'undone') {
             task.status = `today-${getCurrentDateInDDMMYY()}`;
           }
@@ -177,19 +182,18 @@ useEffect(() => {
 
 
   return (
-    <ImageBackground 
-      source={require('./assets/bg.png')} // Your local background image
-      style={styles.backgroundImage}
-      imageStyle={styles.imageStyle} // Optional, if you need specific image styling
-    >
+    <View 
+    
+    style={styles.backgroundImage}
+   
+  >
       <View style={styles.container}>
         <Nav />
         <View style={styles.moneyContainer}>
-          <Cir />
           <Money mn = {sum}/> 
         </View>
-        <View style={styles.line} />
-        <Text style={styles.heading} >Task Today</Text>
+       <View style={styles.line} />
+        <Text style={styles.heading} >Complete Your Task</Text>
         <View style={styles.main}>
           <Main />
         </View>
@@ -213,7 +217,7 @@ useEffect(() => {
       </Modal>
         <TouchableOpacity style={styles.footer} onPress={handlePress}/>
       </View>
-    </ImageBackground>
+    </View>
   );
 }
 
@@ -225,7 +229,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   imageStyle: {
-    top: '50%',// Additional image styling if needed
+    top: '50%',
+    opacity: 0.1
   },
   container: {
     flex: 1,
@@ -233,10 +238,10 @@ const styles = StyleSheet.create({
   },
   heading: {
     color: "#FFBD00",
-    textShadowColor: "#A1D5E5",
+    textShadowColor: "lightorange",
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 4,
-    fontSize: 36,
+    fontSize: 34,
     fontWeight: "600",
     fontFamily: "Inter, sans-serif",
     alignSelf: 'center',
@@ -253,7 +258,7 @@ const styles = StyleSheet.create({
     paddingRight: 20,
   },
   line: {
-    borderColor: "rgba(0, 144, 188, 1)",
+    borderColor: "white",
     borderWidth: 1,
     backgroundColor: "#0090BC",
     width: "90%",

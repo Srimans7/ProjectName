@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Alert, View, Text, TouchableOpacity, Button, Modal, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { launchCamera } from 'react-native-image-picker';
-import axios from 'axios';
+import api from '../axiosService';
 import storage from '@react-native-firebase/storage';
 import Sliders from './slider';
 import { useSelector, useDispatch } from 'react-redux';
@@ -16,7 +16,7 @@ function MyComponent() {
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const response = await axios.get('http://10.0.2.2:3001/tasks');
+        const response = await api.get('http://10.0.2.2:3001/partner-task');
         dispatch(setDb1(response.data)); // Store fetched tasks in Redux
       } catch (error) {
         console.error('Error fetching tasks:', error);
@@ -82,12 +82,12 @@ function MyComponent() {
 
     const updateTask = async (documentId, newImageURL) => {
       try {
-        const response = await axios.put(`http://10.0.2.2:3001/task/${documentId}`, {
+        const response = await api.put(`http://10.0.2.2:3001/task/${documentId}`, {
           img: [...img, newImageURL], // Add the new image URL to the existing images
         });
         setImg(response.data.img); // Update the state with the updated task images
       } catch (error) {
-        console.error('Error updating task:', error);
+        console.error('Error updating tak:', error);
       }
     };
 
@@ -99,11 +99,11 @@ function MyComponent() {
     const compTask = async (documentId) => {
       console.log("Deleted");
       try {
-         await axios.delete(`http://10.0.2.2:3001/task/${documentId}`);
+         await api.delete(`http://10.0.2.2:3001/task/${documentId}`);
         setShowModal(false);
 
         // Fetch updated tasks
-        const updatedTasks = await axios.get('http://10.0.2.2:3001/tasks');
+        const updatedTasks = await api.get('http://10.0.2.2:3001/partner-task');
         dispatch(setDb1(updatedTasks.data));
       } catch (error) {
         console.error('Error completing task:', error);
@@ -149,11 +149,14 @@ function MyComponent() {
       </View>
     );
   }
-
+  console.log(data)
   return (
+    
     <View style={styles.wrapper}>
       <ScrollView>
-        {data
+        {
+          
+        data
           .sort((a, b) => new Date(a.date) - new Date(b.date))
           .map((item, index) => (
             item.status.startsWith('done') && (

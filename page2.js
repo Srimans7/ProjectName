@@ -21,19 +21,18 @@ export default function HomeScreen({ navigation }) {
   const handleCloseModal = () => setShowModal(false);
 
   return (
-    <ImageBackground 
-      source={require('./assets/bg.png')} // Your local background image
+    <View // Your local background image
       style={styles.backgroundImage}
-      imageStyle={styles.imageStyle} // Optional, if you need specific image styling
+   // Optional, if you need specific image styling
     >
       <View style={styles.container}>
         <Nav />
         <View style={styles.moneyContainer}>
-          <Cir />
+       
           <Money mn = {'x'}/> 
         </View>
         <View style={styles.line} />
-        <Text style={styles.heading}>Check Tasks</Text>
+        <Text style={styles.heading}>Verify Friend's Tasks</Text>
         <View style={styles.main}>
           <Main />
 
@@ -41,7 +40,7 @@ export default function HomeScreen({ navigation }) {
         
         <TouchableOpacity style={styles.footer} onPress={handlePress}/>
       </View>
-    </ImageBackground>
+    </View>
   );
 }
 
@@ -81,7 +80,7 @@ const styles = StyleSheet.create({
     paddingRight: 20,
   },
   line: {
-    borderColor: "rgba(0, 144, 188, 1)",
+    borderColor: "white",
     borderWidth: 1,
     backgroundColor: "#0090BC",
     width: "90%",

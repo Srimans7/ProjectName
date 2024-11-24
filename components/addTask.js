@@ -7,6 +7,7 @@ import Slider from "@react-native-community/slider";
 import { useDispatch } from 'react-redux';
 import { setDb } from '../redux/actions';
 import { scheduleNotification } from '../notify';
+import { useNavigation } from '@react-navigation/native';
 
 import api from '../axiosService';
 
@@ -135,7 +136,7 @@ export default function AddTask() {
         </View>
 */}
         <View style={styles.sliderContainer}>
-          <Text style={styles.sliderLabel}>Rs. {mon}</Text>
+          <Text style={styles.sliderLabel}>Set Credit : {mon}</Text>
           <Slider
             style={styles.slider}
             minimumValue={10}
@@ -207,6 +208,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     fontSize: 16,
     marginBottom: 15,
+    backgroundColor: "white"
   },
   datePicker: {
     alignSelf: "center",
@@ -216,7 +218,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   sliderLabel: {
-    fontSize: 16,
+    fontSize: 20,
     color: "#009DCC",
     marginBottom: 8,
   },
