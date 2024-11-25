@@ -12,7 +12,7 @@ import AddTask from './components/addTask';
 import { useSelector, useDispatch } from 'react-redux';
 import { setDb, setDb1, setTestFunction } from './redux/actions';
 
-import Task from './components/model';
+
 
 import moment from 'moment';
 
