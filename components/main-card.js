@@ -18,9 +18,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundBlendMode: "plus-darker",
     boxShadow: "0px 1px 10px 1px #009DCC",
-    backgroundColor: "rgba(207, 238, 248, 0.4)",
-    minHeight: 330,
-    aspectRatio: 1,
+    backgroundColor: "rgba(174, 225, 241, 0.40)",
+    height: 400,
+   // aspectRatio: 1,
   },
 });
 

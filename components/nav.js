@@ -4,9 +4,8 @@ import { FlatList, ScrollView, View, StyleSheet, Image, Text } from "react-nativ
 export default function MyComponent() {
   return (
     <View style={styles.container}>
-      <Image resizeMode="auto" source={{ uri: "https://cdn.builder.io/api/v1/image/assets/TEMP/3c655248e4e6ba5e5096c0eefa82ecce30d76e3e5e247c6aeff81bf5cfec0095?apiKey=2a38c587787c4f68bb9ff72712a54e47&" }} style={styles.image} />
       <View style={styles.textWrapper}>
-        <Text>Paritto</Text>
+        <Text> </Text>
       </View>
     </View>
   );
@@ -34,6 +33,7 @@ const styles = StyleSheet.create({
     aspectRatio: "1.18",
   },
   textWrapper: {
+    
     fontFamily: "Inter, sans-serif",
     flexGrow: 1,
     flexShrink: 1,

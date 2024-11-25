@@ -3,10 +3,13 @@ import { SafeAreaView, StyleSheet, Text, View, TextInput, Pressable } from 'reac
 import DatePicker from 'react-native-date-picker';
 import LinearGradient from 'react-native-linear-gradient';
 import Slider from "@react-native-community/slider";
-import axios from 'axios';  // Add Axios for API calls
+
 import { useDispatch } from 'react-redux';
 import { setDb } from '../redux/actions';
 import { scheduleNotification } from '../notify';
+import { useNavigation } from '@react-navigation/native';
+
+import api from '../axiosService';
 
 export default function AddTask() {
   const [date, setDate] = useState(new Date());
@@ -66,11 +69,11 @@ export default function AddTask() {
 
     try {
       // Make POST request to add a new task to the server
-      const response = await axios.post('http://ec2-50-19-179-98.compute-1.amazonaws.com:5000/task', newTask); // Replace with your server URL
+      const response = await api.post('http://10.0.2.2:3001/task', newTask); // Replace with your server URL
       console.log('Task added:', response.data);
 
       // Dispatch the updated tasks to Redux
-      const tasksResponse = await axios.get('http://ec2-50-19-179-98.compute-1.amazonaws.com:5000/tasks'); // Fetch updated tasks
+      const tasksResponse = await api.get('http://10.0.2.2:3001/tasks'); // Fetch updated tasks
       dispatch(setDb(tasksResponse.data));
 
       // Schedule notification if no repeat days are selected
@@ -116,7 +119,7 @@ export default function AddTask() {
           mode="datetime"
           style={styles.datePicker}
         />
-
+{/*
         <View style={styles.sliderContainer}>
           <Text style={styles.sliderLabel}>{dur} mins</Text>
           <Slider
@@ -131,9 +134,9 @@ export default function AddTask() {
             thumbTintColor="#1fb28a"
           />
         </View>
-
+*/}
         <View style={styles.sliderContainer}>
-          <Text style={styles.sliderLabel}>Rs. {mon}</Text>
+          <Text style={styles.sliderLabel}>Set Credit : {mon}</Text>
           <Slider
             style={styles.slider}
             minimumValue={10}
@@ -147,7 +150,9 @@ export default function AddTask() {
           />
         </View>
 
-        {/* Day Selection Buttons */}
+        {
+
+        /*
         <View style={styles.weekContainer}>
           {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
             <Pressable
@@ -161,7 +166,8 @@ export default function AddTask() {
               <Text style={styles.dayText}>{day}</Text>
             </Pressable>
           ))}
-        </View>
+        </View> */
+}
 
         <Pressable style={styles.submitButton} onPress={submitTaskToServer}>
           <Text style={styles.submitButtonText}>Submit</Text>
@@ -202,6 +208,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     fontSize: 16,
     marginBottom: 15,
+    backgroundColor: "white"
   },
   datePicker: {
     alignSelf: "center",
@@ -211,7 +218,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   sliderLabel: {
-    fontSize: 16,
+    fontSize: 20,
     color: "#009DCC",
     marginBottom: 8,
   },
