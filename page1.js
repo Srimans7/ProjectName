@@ -25,7 +25,7 @@ import {scheduleNotification} from "./notify";
 
 export default function HomeScreen({ navigation }) {
   const handlePress = () => {
-    navigation.navigate('Lobby');
+    navigation.navigate('Request');
   };
 
   const [showModal, setShowModal] = useState(false);

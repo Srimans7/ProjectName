@@ -5,6 +5,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import HomeScreen from './page1';
 import LobbyScreen from './LobbyScreen';
+import RequestScreen from './RequestPage';
 import SecondScreen from './page2';
 import LoginScreen from './LoginScreen'; // Import the login screen
 import { Provider } from 'react-redux';
@@ -51,6 +52,7 @@ export default function App() {
              <Stack.Screen name="Register" component={RegisterScreen} />
             <Stack.Screen name="Home" component={HomeScreen} />
             <Stack.Screen name="Lobby" component={LobbyScreen} />
+            <Stack.Screen name="Request" component={RequestScreen} />
             <Stack.Screen name="Second" component={SecondScreen} />
           </Stack.Navigator>
         </NavigationContainer>
