@@ -4,14 +4,29 @@ import { useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import HomeScreen from './page1';
+import LobbyScreen from './LobbyScreen';
 import SecondScreen from './page2';
 import LoginScreen from './LoginScreen'; // Import the login screen
 import { Provider } from 'react-redux';
 import { Store, persistor } from './redux/store';
 import { PersistGate } from 'redux-persist/integration/react';
 import RegisterScreen from './RegisterScreen';
+import { createDrawerNavigator } from '@react-navigation/drawer';
+import {
+  Animated,
+  View,
+  Text,
+  StyleSheet,
+  TouchableWithoutFeedback,
+  TouchableOpacity,
+  Dimensions,
+} from 'react-native';
+
 
 const Stack = createStackNavigator();
+
+
+
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false); // Track login state
@@ -35,6 +50,7 @@ export default function App() {
             />
              <Stack.Screen name="Register" component={RegisterScreen} />
             <Stack.Screen name="Home" component={HomeScreen} />
+            <Stack.Screen name="Lobby" component={LobbyScreen} />
             <Stack.Screen name="Second" component={SecondScreen} />
           </Stack.Navigator>
         </NavigationContainer>
