@@ -4,6 +4,7 @@ import api from './axiosService';
 
 export default function UserList() {
   const [data, setData] = useState([]); // State to hold user data
+  const [friend, setFriend] = useState([]);
   const [loading, setLoading] = useState(true); // State to handle loading indicator
 
   // Function to handle sending friend request
@@ -31,10 +32,19 @@ export default function UserList() {
       try {
         const response = await api.get('http://10.0.2.2:3001/users-without-friends');
         setData(response.data); // Save data to state
+    
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
         setLoading(false); // Hide loading indicator
+      }
+      try{
+        const respons = await api.get('http://10.0.2.2:3001/get-friend');
+        setFriend(...respons.data);
+        console.log(respons.data)
+      }
+      catch(e){
+        console.error('Error fetching data:', e.message);
       }
     };
 
@@ -66,7 +76,10 @@ export default function UserList() {
           contentContainerStyle={styles.list}
         />
       )}
-      <TouchableOpacity style={styles.footer} onPress={handlePress}/>
+      <Text>Friend Detail</Text>
+      <Text>{friend && friend.username}</Text>
+      <Text>{friend && friend.email}</Text>
+       
     </View>
   );
 }
