@@ -44,7 +44,7 @@ export default function UserList() {
         console.log(respons.data)
       }
       catch(e){
-        console.error('Error fetching data:', e.message);
+        Alert.alert( "no friends");
       }
     };
 
@@ -77,8 +77,8 @@ export default function UserList() {
         />
       )}
       <Text>Friend Detail</Text>
-      <Text>{friend && friend.username}</Text>
-      <Text>{friend && friend.email}</Text>
+     {friend && <Text>{ friend.username}</Text>} 
+     {friend && <Text>{friend.email}</Text>}
        
     </View>
   );
