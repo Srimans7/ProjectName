@@ -66,7 +66,7 @@ export default function UserList() {
           contentContainerStyle={styles.list}
         />
       )}
-      <TouchableOpacity style={styles.footer} onPress={handlePress}/>
+      <TouchableOpacity style={styles.footer} onPress={handlePress}><Text>Remove Friend</Text></TouchableOpacity >
     </View>
   );
 }
@@ -109,8 +109,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#AAE0F0",
     minHeight: 40,
     position: 'absolute',
-    bottom: 0,
-    width: "100%",
+    left: "20%",
+    bottom: 30,
+    width: "60%",
   },
   buttonText: {
     color: '#fff',
