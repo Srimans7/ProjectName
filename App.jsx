@@ -120,58 +120,75 @@ export default function App() {
 
   return (
     <Provider store={Store}>
-      <PersistGate loading={null} persistor={persistor}>
-        <NavigationContainer>
-          <Stack.Navigator
-            screenOptions={{
-              headerShown: false,
-            }}
-          >
-            {/* Public Screens */}
-            {!isLoggedIn && (
-              <>
-                <Stack.Screen name="Login" component={LoginScreen} />
-                <Stack.Screen name="Register" component={RegisterScreen} />
-              </>
-            )}
-
-            {/* Private Screens */}
-            {true && (
-              <>
-                <Stack.Screen name="Home">
-                  {(props) => (
-                    <ScreenWithSidebar navigation={props.navigation} onLogout={onLogout}>
-                      <HomeScreen {...props} />
-                    </ScreenWithSidebar>
-                  )}
-                </Stack.Screen>
-                <Stack.Screen name="Lobby">
-                  {(props) => (
-                    <ScreenWithSidebar navigation={props.navigation} onLogout={onLogout}>
-                      <LobbyScreen {...props} />
-                    </ScreenWithSidebar>
-                  )}
-                </Stack.Screen>
-                <Stack.Screen name="Request">
-                  {(props) => (
-                    <ScreenWithSidebar navigation={props.navigation} onLogout={onLogout}>
-                      <RequestScreen {...props} />
-                    </ScreenWithSidebar>
-                  )}
-                </Stack.Screen>
-                <Stack.Screen name="Second">
-                  {(props) => (
-                    <ScreenWithSidebar navigation={props.navigation} onLogout={onLogout}>
-                      <SecondScreen {...props} />
-                    </ScreenWithSidebar>
-                  )}
-                </Stack.Screen>
-              </>
-            )}
-          </Stack.Navigator>
-        </NavigationContainer>
-      </PersistGate>
-    </Provider>
+    <PersistGate loading={null} persistor={persistor}>
+      <NavigationContainer>
+        <Stack.Navigator
+          screenOptions={{
+            headerShown: false,
+          }}
+        >
+          {/* Public Screens */}
+          {!isLoggedIn && (
+            <>
+              <Stack.Screen name="Login" component={LoginScreen} />
+              <Stack.Screen name="Register" component={RegisterScreen} />
+            </>
+          )}
+  
+          {/* Private Screens */}
+          {true && (
+            <>
+              <Stack.Screen name="Home">
+                {(props) => (
+                  <ScreenWithSidebar
+                    navigation={props.navigation}
+                    onLogout={onLogout}
+                    key={props.route?.key || 'Home'} // Add `key` to force re-render
+                  >
+                    <HomeScreen {...props} />
+                  </ScreenWithSidebar>
+                )}
+              </Stack.Screen>
+              <Stack.Screen name="Lobby">
+                {(props) => (
+                  <ScreenWithSidebar
+                    navigation={props.navigation}
+                    onLogout={onLogout}
+                    key={props.route?.key || 'Lobby'} // Add `key` to force re-render
+                  >
+                    <LobbyScreen {...props} />
+                  </ScreenWithSidebar>
+                )}
+              </Stack.Screen>
+              <Stack.Screen name="Request">
+                {(props) => (
+                  <ScreenWithSidebar
+                    navigation={props.navigation}
+                    onLogout={onLogout}
+                    key={props.route?.key || 'Request'} // Add `key` to force re-render
+                  >
+                    <RequestScreen {...props} />
+                  </ScreenWithSidebar>
+                )}
+              </Stack.Screen>
+              <Stack.Screen name="Second">
+                {(props) => (
+                  <ScreenWithSidebar
+                    navigation={props.navigation}
+                    onLogout={onLogout}
+                    key={props.route?.key || 'Second'} // Add `key` to force re-render
+                  >
+                    <SecondScreen {...props} />
+                  </ScreenWithSidebar>
+                )}
+              </Stack.Screen>
+            </>
+          )}
+        </Stack.Navigator>
+      </NavigationContainer>
+    </PersistGate>
+  </Provider>
+  
   );
 }
 

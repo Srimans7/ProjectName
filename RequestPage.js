@@ -1,38 +1,55 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  FlatList, 
+  ActivityIndicator, 
+  TouchableOpacity, 
+  Alert, 
+  SafeAreaView 
+} from 'react-native';
 import api from './axiosService';
 
 export default function UserList() {
   const [data, setData] = useState([]); // State to hold user data
   const [loading, setLoading] = useState(true); // State to handle loading indicator
 
-  // Function to handle sending friend request
-  const sendFriendRequest = async (id) => {
+  // Function to handle accepting a friend request
+  const acceptFriendRequest = async (id) => {
     try {
       const response = await api.post(`http://10.0.2.2:3001/accept-request/${id}`);
       Alert.alert('Success', response.data.message);
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Error sending friend request';
+      const errorMessage = error.response?.data?.message || 'Error accepting friend request';
       Alert.alert('Error', errorMessage);
     }
   };
 
-  async function handlePress(){
-  
-    let response = await api.post('http://10.0.2.2:3001/have-friend');
-    const isFriend = response.data.state;
-    if(!isFriend) Alert.alert("no friends");
-    else await api.post('http://10.0.2.2:3001/remove-friend');
+  async function handlePress() {
+    try {
+      const response = await api.post('http://10.0.2.2:3001/have-friend');
+      const isFriend = response.data.state;
+
+      if (!isFriend) {
+        Alert.alert("No Friends", "You currently don't have any friends added.");
+      } else {
+        await api.post('http://10.0.2.2:3001/remove-friend');
+        Alert.alert("Success", "Friend removed successfully.");
+      }
+    } catch (error) {
+      Alert.alert("Error", "Could not process your request.");
+    }
   }
 
   useEffect(() => {
-    // Fetch data when the component mounts
     const fetchData = async () => {
       try {
         const response = await api.get('http://10.0.2.2:3001/users-in-request');
         setData(response.data); // Save data to state
       } catch (error) {
         console.error('Error fetching data:', error);
+        Alert.alert("Error", "Could not fetch user data.");
       } finally {
         setLoading(false); // Hide loading indicator
       }
@@ -43,11 +60,11 @@ export default function UserList() {
 
   const renderItem = ({ item }) => (
     <View style={styles.item}>
-      <Text style={styles.username}>Username: {item.username}</Text>
-      <Text style={styles.email}>Email: {item.email}</Text>
+      <Text style={styles.username}>👤 {item.username}</Text>
+      <Text style={styles.email}>📧 {item.email}</Text>
       <TouchableOpacity
         style={styles.requestButton}
-        onPress={() => sendFriendRequest(item._id)} // Trigger the friend request API
+        onPress={() => acceptFriendRequest(item._id)} // Trigger the accept friend request API
       >
         <Text style={styles.buttonText}>Accept Friend Request</Text>
       </TouchableOpacity>
@@ -55,67 +72,94 @@ export default function UserList() {
   );
 
   return (
-    <View style={styles.container}>
-      {loading ? (
-        <ActivityIndicator size="large" color="#007bff" />
-      ) : (
-        <FlatList
-          data={data}
-          keyExtractor={(item) => item._id} // Use _id as a unique key
-          renderItem={renderItem}
-          contentContainerStyle={styles.list}
-        />
-      )}
-      <TouchableOpacity style={styles.footer} onPress={handlePress}><Text>Remove Friend</Text></TouchableOpacity >
-    </View>
+    <SafeAreaView style={styles.background}>
+      <View style={styles.container}>
+        <Text style={styles.header}>Manage Friend Requests</Text>
+        {loading ? (
+          <ActivityIndicator size="large" color="#0090BC" />
+        ) : (
+          <FlatList
+            data={data}
+            keyExtractor={(item) => item._id} // Use _id as a unique key
+            renderItem={renderItem}
+            contentContainerStyle={styles.list}
+          />
+        )}
+        <TouchableOpacity style={styles.removeButton} onPress={handlePress}>
+          <Text style={styles.removeButtonText}>Remove Friend</Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  background: {
+    flex: 1,
+    backgroundColor: 'white',
+  },
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
-    paddingTop: 20,
+    padding: 20,
+  },
+  header: {
+    color: "#FFBD00",
+    fontSize: 28,
+    fontWeight: "600",
+    fontFamily: "Inter, sans-serif",
+    textAlign: 'center',
+    marginBottom: 20,
   },
   list: {
     paddingHorizontal: 16,
   },
   item: {
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
     padding: 16,
     marginBottom: 12,
-    borderRadius: 8,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#0090BC',
     shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowRadius: 5,
     elevation: 3,
   },
   username: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
+    marginBottom: 5,
+    color: "#333",
   },
   email: {
     fontSize: 14,
     color: '#555',
   },
   requestButton: {
-    backgroundColor: '#007bff',
-    padding: 10,
+    backgroundColor: '#0090BC',
+    padding: 12,
     borderRadius: 5,
     marginTop: 10,
     alignItems: 'center',
   },
-  footer: {
-    backgroundColor: "#AAE0F0",
-    minHeight: 40,
-    position: 'absolute',
-    left: "20%",
-    bottom: 30,
-    width: "60%",
-  },
   buttonText: {
     color: '#fff',
     fontSize: 14,
+    fontWeight: 'bold',
+  },
+  removeButton: {
+    backgroundColor: '#FF6F61',
+    padding: 12,
+    borderRadius: 5,
+    marginTop: 20,
+    alignItems: 'center',
+    alignSelf: 'center',
+    width: "60%",
+  },
+  removeButtonText: {
+    color: '#fff',
+    fontSize: 16,
     fontWeight: 'bold',
   },
 });
