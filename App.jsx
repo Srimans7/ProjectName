@@ -1,6 +1,6 @@
 import 'react-native-gesture-handler';
 import * as React from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import HomeScreen from './page1';
@@ -12,6 +12,7 @@ import RegisterScreen from './RegisterScreen';
 import { Provider } from 'react-redux';
 import { Store, persistor } from './redux/store';
 import { PersistGate } from 'redux-persist/integration/react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   View,
   Text,
@@ -19,9 +20,12 @@ import {
   StyleSheet,
   Dimensions,
   Animated,
+  Alert,
 } from 'react-native';
 
 const Stack = createStackNavigator();
+
+
 
 // Custom Sidebar Component
 const Sidebar = ({ navigation, toggleSidebar }) => {
@@ -74,56 +78,90 @@ const ScreenWithSidebar = ({ children, navigation }) => {
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false); // Track login state
+  const [loading, setLoading] = useState(true); // Track loading state for token check
+
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      try {
+        const token = await AsyncStorage.getItem('userToken');
+        if (token) {
+          setIsLoggedIn(true);
+        }
+      } catch (error) {
+        console.error("Failed to fetch token", error);
+      } finally {
+        setLoading(false); // Set loading to false after token check
+      }
+    };
+    checkLoginStatus();
+  }, []);
+
+  // Show a loading indicator while checking the token
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
 
   return (
     <Provider store={Store}>
       <PersistGate loading={null} persistor={persistor}>
         <NavigationContainer>
           <Stack.Navigator
-            initialRouteName={isLoggedIn ? "Home" : "Login"}
             screenOptions={{
               headerShown: false,
             }}
           >
             {/* Public Screens */}
-            <Stack.Screen name="Login" component={LoginScreen} />
-            <Stack.Screen name="Register" component={RegisterScreen} />
+            {!isLoggedIn && (
+              <>
+                <Stack.Screen name="Login" component={LoginScreen} />
+                <Stack.Screen name="Register" component={RegisterScreen} />
+              </>
+            )}
 
             {/* Private Screens */}
-            <Stack.Screen name="Home">
-              {(props) => (
-                <ScreenWithSidebar navigation={props.navigation}>
-                  <HomeScreen {...props} />
-                </ScreenWithSidebar>
-              )}
-            </Stack.Screen>
-            <Stack.Screen name="Lobby">
-              {(props) => (
-                <ScreenWithSidebar navigation={props.navigation}>
-                  <LobbyScreen {...props} />
-                </ScreenWithSidebar>
-              )}
-            </Stack.Screen>
-            <Stack.Screen name="Request">
-              {(props) => (
-                <ScreenWithSidebar navigation={props.navigation}>
-                  <RequestScreen {...props} />
-                </ScreenWithSidebar>
-              )}
-            </Stack.Screen>
-            <Stack.Screen name="Second">
-              {(props) => (
-                <ScreenWithSidebar navigation={props.navigation}>
-                  <SecondScreen {...props} />
-                </ScreenWithSidebar>
-              )}
-            </Stack.Screen>
+            {isLoggedIn && (
+              <>
+                <Stack.Screen name="Home">
+                  {(props) => (
+                    <ScreenWithSidebar navigation={props.navigation}>
+                      <HomeScreen {...props} />
+                    </ScreenWithSidebar>
+                  )}
+                </Stack.Screen>
+                <Stack.Screen name="Lobby">
+                  {(props) => (
+                    <ScreenWithSidebar navigation={props.navigation}>
+                      <LobbyScreen {...props} />
+                    </ScreenWithSidebar>
+                  )}
+                </Stack.Screen>
+                <Stack.Screen name="Request">
+                  {(props) => (
+                    <ScreenWithSidebar navigation={props.navigation}>
+                      <RequestScreen {...props} />
+                    </ScreenWithSidebar>
+                  )}
+                </Stack.Screen>
+                <Stack.Screen name="Second">
+                  {(props) => (
+                    <ScreenWithSidebar navigation={props.navigation}>
+                      <SecondScreen {...props} />
+                    </ScreenWithSidebar>
+                  )}
+                </Stack.Screen>
+              </>
+            )}
           </Stack.Navigator>
         </NavigationContainer>
       </PersistGate>
     </Provider>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
