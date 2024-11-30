@@ -20,15 +20,22 @@ import {
   StyleSheet,
   Dimensions,
   Animated,
-  Alert,
 } from 'react-native';
 
 const Stack = createStackNavigator();
 
-
-
 // Custom Sidebar Component
-const Sidebar = ({ navigation, toggleSidebar }) => {
+const Sidebar = ({ navigation, toggleSidebar, onLogout }) => {
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.removeItem('userToken'); // Clear token from storage
+      onLogout(); // Update the `isLoggedIn` state
+      navigation.navigate('Login'); // Navigate to the Login screen
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
+  };
+
   return (
     <View style={styles.sidebar}>
       <TouchableOpacity onPress={toggleSidebar}>
@@ -46,12 +53,15 @@ const Sidebar = ({ navigation, toggleSidebar }) => {
       <TouchableOpacity onPress={() => { toggleSidebar(); navigation.navigate('Second'); }}>
         <Text style={styles.menuItem}>Second Screen</Text>
       </TouchableOpacity>
+      <TouchableOpacity onPress={handleLogout}>
+        <Text style={styles.menuItem}>Log out</Text>
+      </TouchableOpacity>
     </View>
   );
 };
 
 // Wrapper Component for Screens with Sidebar
-const ScreenWithSidebar = ({ children, navigation }) => {
+const ScreenWithSidebar = ({ children, navigation, onLogout }) => {
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
   const [sidebarAnimation] = useState(new Animated.Value(-Dimensions.get('window').width * 0.7)); // Sidebar starts hidden
 
@@ -69,7 +79,7 @@ const ScreenWithSidebar = ({ children, navigation }) => {
         <Text style={styles.hamburgerText}>☰</Text>
       </TouchableOpacity>
       <Animated.View style={[styles.sidebarOverlay, { left: sidebarAnimation }]}>
-        <Sidebar navigation={navigation} toggleSidebar={toggleSidebar} />
+        <Sidebar navigation={navigation} toggleSidebar={toggleSidebar} onLogout={onLogout} />
       </Animated.View>
       <View style={styles.screenContent}>{children}</View>
     </View>
@@ -96,7 +106,10 @@ export default function App() {
     checkLoginStatus();
   }, []);
 
-  // Show a loading indicator while checking the token
+  const onLogout = () => {
+    setIsLoggedIn(false); // Update state to reflect logged-out status
+  };
+
   if (loading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -115,7 +128,7 @@ export default function App() {
             }}
           >
             {/* Public Screens */}
-            {!isLoggedIn && (
+            {true && (
               <>
                 <Stack.Screen name="Login" component={LoginScreen} />
                 <Stack.Screen name="Register" component={RegisterScreen} />
@@ -123,32 +136,32 @@ export default function App() {
             )}
 
             {/* Private Screens */}
-            {isLoggedIn && (
+            {true && (
               <>
                 <Stack.Screen name="Home">
                   {(props) => (
-                    <ScreenWithSidebar navigation={props.navigation}>
+                    <ScreenWithSidebar navigation={props.navigation} onLogout={onLogout}>
                       <HomeScreen {...props} />
                     </ScreenWithSidebar>
                   )}
                 </Stack.Screen>
                 <Stack.Screen name="Lobby">
                   {(props) => (
-                    <ScreenWithSidebar navigation={props.navigation}>
+                    <ScreenWithSidebar navigation={props.navigation} onLogout={onLogout}>
                       <LobbyScreen {...props} />
                     </ScreenWithSidebar>
                   )}
                 </Stack.Screen>
                 <Stack.Screen name="Request">
                   {(props) => (
-                    <ScreenWithSidebar navigation={props.navigation}>
+                    <ScreenWithSidebar navigation={props.navigation} onLogout={onLogout}>
                       <RequestScreen {...props} />
                     </ScreenWithSidebar>
                   )}
                 </Stack.Screen>
                 <Stack.Screen name="Second">
                   {(props) => (
-                    <ScreenWithSidebar navigation={props.navigation}>
+                    <ScreenWithSidebar navigation={props.navigation} onLogout={onLogout}>
                       <SecondScreen {...props} />
                     </ScreenWithSidebar>
                   )}
@@ -161,7 +174,6 @@ export default function App() {
     </Provider>
   );
 }
-
 
 const styles = StyleSheet.create({
   container: {
