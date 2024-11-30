@@ -128,7 +128,7 @@ export default function App() {
             }}
           >
             {/* Public Screens */}
-            {true && (
+            {!isLoggedIn && (
               <>
                 <Stack.Screen name="Login" component={LoginScreen} />
                 <Stack.Screen name="Register" component={RegisterScreen} />
