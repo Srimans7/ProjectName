@@ -97,9 +97,9 @@ export default function UserList() {
         <View style={styles.friendContainer}>
           <Text style={styles.subHeader}>Your Current Friend</Text>
           {friend ? (
-            <>
-              <Text style={styles.friendText}>👤 {friend.username}</Text>
-              <Text style={styles.friendText}>📧 {friend.email}</Text>
+            <> 
+              <Text style={styles.friendText}>👤 {friend[0].username}</Text>
+              <Text style={styles.friendText}>📧 {friend[0].email}</Text>
               <TouchableOpacity style={styles.removeButton} onPress={handlePress}>
                 <Text style={styles.buttonText}>Remove Friend</Text>
               </TouchableOpacity>
