@@ -143,7 +143,7 @@ useEffect(() => {
               // Delete the task via API
               
               try{ await api.delete(`http://10.0.2.2:3001/task/${task._id}`);
-            }
+            } 
               catch(e) {console.log("not deleted ", e)}
             }
           }
