@@ -69,11 +69,11 @@ export default function AddTask() {
 
     try {
       // Make POST request to add a new task to the server
-      const response = await api.post('http://10.0.2.2:3001/task', newTask); // Replace with your server URL
+      const response = await api.post('/task', newTask); // Replace with your server URL
       console.log('Task added:', response.data);
 
       // Dispatch the updated tasks to Redux
-      const tasksResponse = await api.get('http://10.0.2.2:3001/tasks'); // Fetch updated tasks
+      const tasksResponse = await api.get('/tasks'); // Fetch updated tasks
       dispatch(setDb(tasksResponse.data));
 
       // Schedule notification if no repeat days are selected

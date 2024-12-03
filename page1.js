@@ -71,6 +71,7 @@ function extractDateFromStatus(status) {
   const year = dateString.substring(4, 6);
   
   // Create a date object using the extracted parts
+  
   const date = new Date(`20${year}-${month}-${day}`); // Prepend '20' to year to make it 4 digits
   return date;
 }
@@ -78,12 +79,12 @@ function extractDateFromStatus(status) {
 useEffect(() => {
   const fetchTasks = async () => {
     try {
-      const response = await api.get('http://10.0.2.2:3001/tasks');  // Replace with your API URL
+      const response = await api.get('/tasks');  // Replace with your API URL
       const tasks = response.data;
       console.log ("TASKS  : ", tasks)
       let localSum = 0;
 
-     // const prevSumResponse = await api.get('http://10.0.2.2:3001/task/1724230688403-kv2er3pcj');
+     // const prevSumResponse = await api.get('/task/1724230688403-kv2er3pcj');
      /* const prevSumResponse = tasks.find((task) => task._id === "1724230688403-kv2er3pcj");
       let prevSum = prevSumResponse.mon;  // Assuming the API returns a `mon` field
       localSum = prevSum; */
@@ -124,13 +125,13 @@ useEffect(() => {
           scheduleNotification(task.title, new Date(convertUTCtoIST(task.date)));
 
           // Update the task status in the database
-          await api.put(`http://10.0.2.2:3001/task/${task._id}`, { status: task.status });
+          await api.put(`/task/${task._id}`, { status: task.status });
         } else if (task.status === 'ver') {
           if (isRepeatable) {
             task.status = 'active';
           } else {
             // Delete the task via API
-            await api.delete(`http://10.0.2.2:3001/task/${task._id}`);
+            await api.delete(`/task/${task._id}`);
           }
         } else if (isBeforeDay(taskDate.toDate(), today)) {
           
@@ -142,7 +143,7 @@ useEffect(() => {
             } else {
               // Delete the task via API
               
-              try{ await api.delete(`http://10.0.2.2:3001/task/${task._id}`);
+              try{ await api.delete(`/task/${task._id}`);
             } 
               catch(e) {console.log("not deleted ", e)}
             }
@@ -156,13 +157,13 @@ useEffect(() => {
             task.status = 'active';
           }
           // Update the task status in the database
-          await api.put(`http://10.0.2.2:3001/task/${task._id}`, { status: task.status });
+          await api.put(`/task/${task._id}`, { status: task.status });
         }
 
       });
 
       // Update the sum of 'mon' for the task with the specific ID
-    /*  await api.put(`http://10.0.2.2:3001/task/1724230688403-kv2er3pcj`, {
+    /*  await api.put(`/task/1724230688403-kv2er3pcj`, {
         mon: localSum
       }); 
       setSum(localSum);
@@ -189,9 +190,9 @@ useEffect(() => {
   >
       <View style={styles.container}>
         <Nav />
-        <View style={styles.moneyContainer}>
+       {/* <View style={styles.moneyContainer}>
           <Money mn = {sum}/> 
-        </View>
+        </View> */}
        <View style={styles.line} />
         <Text style={styles.heading} >Complete Your Task</Text>
         <View style={styles.main}>

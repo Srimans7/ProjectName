@@ -27,10 +27,7 @@ export default function HomeScreen({ navigation }) {
     >
       <View style={styles.container}>
         <Nav />
-        <View style={styles.moneyContainer}>
-       
-          <Money mn = {'x'}/> 
-        </View>
+        
         <View style={styles.line} />
         <Text style={styles.heading}>Verify Friend's Tasks</Text>
         <View style={styles.main}>

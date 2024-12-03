@@ -19,7 +19,7 @@ export default function UserList() {
   // Function to handle sending friend request
   const sendFriendRequest = async (id) => {
     try {
-      const response = await api.post(`http://10.0.2.2:3001/send-request/${id}`);
+      const response = await api.post(`/send-request/${id}`);
       Alert.alert('Success', response.data.message);
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Error sending friend request';
@@ -29,13 +29,13 @@ export default function UserList() {
 
   async function handlePress() {
     try {
-      const response = await api.post('http://10.0.2.2:3001/have-friend');
+      const response = await api.post('/have-friend');
       const isFriend = response.data.state;
 
       if (!isFriend) {
         Alert.alert("No Friends", "You currently don't have any friends added.");
       } else {
-        await api.post('http://10.0.2.2:3001/remove-friend');
+        await api.post('/remove-friend');
         Alert.alert("Success", "Friend removed successfully.");
         setFriend(null); // Reset friend state
       }
@@ -47,7 +47,7 @@ export default function UserList() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await api.get('http://10.0.2.2:3001/users-without-friends');
+        const response = await api.get('/users-without-friends');
         setData(response.data); // Save data to state
       } catch (error) {
         console.error('Error fetching users:', error);
@@ -57,7 +57,7 @@ export default function UserList() {
       }
 
       try {
-        const friendResponse = await api.get('http://10.0.2.2:3001/get-friend');
+        const friendResponse = await api.get('/get-friend');
         setFriend(friendResponse.data);
       } catch (error) {
         console.log("No friend found:", error);
@@ -70,7 +70,7 @@ export default function UserList() {
   const renderItem = ({ item }) => (
     <View style={styles.item}>
       <Text style={styles.username}>👤 {item.username}</Text>
-      <Text style={styles.email}>📧 {item.email}</Text>
+   
       <TouchableOpacity
         style={styles.requestButton}
         onPress={() => sendFriendRequest(item._id)} // Trigger the friend request API
@@ -99,7 +99,7 @@ export default function UserList() {
           {friend ? (
             <> 
               <Text style={styles.friendText}>👤 {friend[0].username}</Text>
-              <Text style={styles.friendText}>📧 {friend[0].email}</Text>
+             
               <TouchableOpacity style={styles.removeButton} onPress={handlePress}>
                 <Text style={styles.buttonText}>Remove Friend</Text>
               </TouchableOpacity>

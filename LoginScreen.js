@@ -8,7 +8,7 @@ import {
   Alert 
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
+import api from './axiosService';
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
@@ -16,7 +16,7 @@ export default function LoginScreen({ navigation }) {
 
   const handleLogin = async () => {
     try {
-      const response = await axios.post('http://10.0.2.2:3001/login', {
+      const response = await api.post('/login', {
         email,
         password,
       });

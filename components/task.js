@@ -16,7 +16,7 @@ function MyComponent() {
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const response = await api.get('http://10.0.2.2:3001/tasks');
+        const response = await api.get('/tasks');
         dispatch(setDb(response.data)); // Store fetched tasks in Redux
       } catch (error) {
         console.error('Error fetching tasks:', error);
@@ -78,7 +78,7 @@ function MyComponent() {
         const updatedImages = [newImageURL]; // Add the new image URL to the existing images
         console.log("updatedImages :", updatedImages)
         
-        const response = await api.put(`http://10.0.2.2:3001/task/${documentId}`, {
+        const response = await api.put(`/task/${documentId}`, {
           img: updatedImages,
         });
     
@@ -104,13 +104,13 @@ function MyComponent() {
 
     const compTask = async (documentId) => {
       try {
-        await api.put(`http://10.0.2.2:3001/task/${documentId}`, {
+        await api.put(`/task/${documentId}`, {
           status: `done-${getCurrentDateInDDMMYY()}`,
         });
         setShowModal(false);
 
         // Fetch updated tasks
-        const updatedTasks = await api.get('http://10.0.2.2:3001/tasks');
+        const updatedTasks = await api.get('/tasks');
         dispatch(setDb(updatedTasks.data));
       } catch (error) {
         console.error('Error completing task:', error);

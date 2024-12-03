@@ -18,7 +18,7 @@ export default function UserList() {
   // Function to handle accepting a friend request
   const acceptFriendRequest = async (id) => {
     try {
-      const response = await api.post(`http://10.0.2.2:3001/accept-request/${id}`);
+      const response = await api.post(`/accept-request/${id}`);
       Alert.alert('Success', response.data.message);
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Error accepting friend request';
@@ -28,13 +28,13 @@ export default function UserList() {
 
   async function handlePress() {
     try {
-      const response = await api.post('http://10.0.2.2:3001/have-friend');
+      const response = await api.post('/have-friend');
       const isFriend = response.data.state;
 
       if (!isFriend) {
         Alert.alert("No Friends", "You currently don't have any friends added.");
       } else {
-        await api.post('http://10.0.2.2:3001/remove-friend');
+        await api.post('/remove-friend');
         Alert.alert("Success", "Friend removed successfully.");
       }
     } catch (error) {
@@ -45,7 +45,7 @@ export default function UserList() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await api.get('http://10.0.2.2:3001/users-in-request');
+        const response = await api.get('/users-in-request');
         setData(response.data); // Save data to state
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -61,7 +61,7 @@ export default function UserList() {
   const renderItem = ({ item }) => (
     <View style={styles.item}>
       <Text style={styles.username}>👤 {item.username}</Text>
-      <Text style={styles.email}>📧 {item.email}</Text>
+      
       <TouchableOpacity
         style={styles.requestButton}
         onPress={() => acceptFriendRequest(item._id)} // Trigger the accept friend request API

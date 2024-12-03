@@ -7,7 +7,7 @@ import {
   StyleSheet, 
   Alert 
 } from 'react-native';
-import axios from 'axios';
+import api from './axiosService';
 
 export default function RegisterScreen({ navigation }) {
   const [username, setUsername] = useState('');
@@ -16,7 +16,7 @@ export default function RegisterScreen({ navigation }) {
 
   const handleRegister = async () => {
     try {
-      const response = await axios.post('http://10.0.2.2:3001/register', {
+      const response = await api.post('/register', {
         username,
         email,
         password,

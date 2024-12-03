@@ -51,7 +51,7 @@ const Sidebar = ({ navigation, toggleSidebar, onLogout }) => {
         <Text style={styles.menuItem}>Requests</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={() => { toggleSidebar(); navigation.navigate('Second'); }}>
-        <Text style={styles.menuItem}>Second Screen</Text>
+        <Text style={styles.menuItem}>Friend's Task</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={handleLogout}>
         <Text style={styles.menuItem}>Log out</Text>
@@ -195,45 +195,50 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#FFFFFF', // White background
   },
   sidebarOverlay: {
     position: 'absolute',
     top: 0,
     bottom: 0,
-    width: Dimensions.get('window').width * 0.3, // Sidebar width (70% of screen width)
-    backgroundColor: '#007bff',
+    width: Dimensions.get('window').width * 0.4, // Sidebar width (70% of screen width)
+    backgroundColor: '#0090BC', // Primary blue color
     zIndex: 1000,
     elevation: 5,
   },
   sidebar: {
     flex: 1,
-    paddingVertical: 20,
-    paddingHorizontal: 10,
+    paddingVertical: 16, // Equivalent to spacing.medium
+    paddingHorizontal: 16,
   },
   closeButton: {
     fontSize: 18,
-    color: '#fff',
+    color: '#FFFFFF', // White text
     textAlign: 'right',
-    marginBottom: 20,
+    marginBottom: 24, // Equivalent to spacing.large
   },
   menuItem: {
-    color: '#fff',
-    fontSize: 16,
-    marginVertical: 10,
+    color: '#FFFFFF', // White text
+    fontSize: 16, // Body font size
+    fontWeight: '400', // Regular font weight
+    marginVertical: 8, // Equivalent to spacing.small
+    paddingHorizontal: 8,
   },
   hamburgerButton: {
     position: 'absolute',
-    top: 40,
-    left: 20,
+    top: 24, // Equivalent to spacing.large
+    left: 16, // Equivalent to spacing.medium
     zIndex: 1100,
   },
   hamburgerText: {
     fontSize: 24,
-    color: '#007bff',
+    color: '#0090BC', // Primary blue color
   },
   screenContent: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
-    padding: 0,
+    backgroundColor: '#FFFFFF', // White background
+    padding: 16, // Equivalent to spacing.medium
   },
 });
+
+
