@@ -209,10 +209,11 @@ useEffect(() => {
         visible={showModal}
         onRequestClose={handleCloseModal}
       >
-        <Pressable style={styles.overlay} onPress={handleCloseModal}>
+        <Pressable style={styles.overlay} >
           <View style={styles.modalContainer}>
-            <AddTask />
-           
+         
+            <AddTask onClose={handleCloseModal} />
+            
           </View>
         </Pressable>
       </Modal>
@@ -292,4 +293,5 @@ const styles = StyleSheet.create({
   overlay: {
     flex: 1,
   },
+
 });

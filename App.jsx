@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
   screenContent: {
     flex: 1,
     backgroundColor: '#FFFFFF', // White background
-    padding: 16, // Equivalent to spacing.medium
+   
   },
 });
 

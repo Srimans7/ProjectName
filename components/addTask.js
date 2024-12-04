@@ -11,7 +11,7 @@ import { useNavigation } from '@react-navigation/native';
 
 import api from '../axiosService';
 
-export default function AddTask() {
+export default function AddTask({onClose}) {
   const [date, setDate] = useState(new Date());
   const [dur, setDur] = useState(5);
   const [mon, setMon] = useState(10);
@@ -60,7 +60,7 @@ export default function AddTask() {
     const newTask = {
       date: newDate,
       dur,
-      mon,
+      mon: 0,
       comp: 0,
       title,
       week,
@@ -91,6 +91,7 @@ export default function AddTask() {
     } catch (error) {
       console.error('Error adding task:', error);
     }
+    onClose();
   };
 
   return (
@@ -103,6 +104,9 @@ export default function AddTask() {
       >
         <View style={styles.header}>
           <Text style={styles.headerText}>Add Task</Text>
+          <Pressable style={styles.closeButton} onPress={onClose}>
+              <Text style={styles.closeButtonText}>Close</Text>
+            </Pressable>
         </View>
 
         <TextInput
@@ -136,7 +140,8 @@ export default function AddTask() {
         </View>
 */}
         <View style={styles.sliderContainer}>
-          <Text style={styles.sliderLabel}>Set Credit : {mon}</Text>
+         { /* <Text style={styles.sliderLabel}>Set Credit : {mon}</Text>
+
           <Slider
             style={styles.slider}
             minimumValue={10}
@@ -147,7 +152,7 @@ export default function AddTask() {
             minimumTrackTintColor="#1fb28a"
             maximumTrackTintColor="#d3d3d3"
             thumbTintColor="#1fb28a"
-          />
+          /> */}
         </View>
 
         {
@@ -253,5 +258,12 @@ const styles = StyleSheet.create({
     color: "#FFF",
     fontSize: 16,
     fontWeight: "700",
+  },
+  closeButtonText: {
+    color: "#FFBD00",
+     fontSize: 24,
+    fontWeight: "600",
+
+  
   },
 });
