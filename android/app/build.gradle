@@ -116,7 +116,7 @@ android {
     //Other parameters
     debuggable false
      shrinkResources true
-      resConfigs "en"
+    
           
             proguardFile "${rootProject.projectDir}/../node_modules/detox/android/detox/proguard-rules-app.pro"
         }
