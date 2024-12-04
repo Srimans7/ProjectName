@@ -3,7 +3,7 @@ import { View, Image, Animated, StyleSheet, useWindowDimensions, FlatList, Text 
 
 const data = [
   { key: '1', imageUrl: require('../assets/add.png') },
-  { key: '2', imageUrl: require('../assets/bg.png') },
+  { key: '2', imageUrl: require('../assets/add.png') },
 ];
 
 const Slider = ({data}) => {
