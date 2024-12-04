@@ -1,20 +1,10 @@
-# Preserve React Native classes and methods
--keep class com.facebook.react.** { *; }
--keep class com.facebook.hermes.** { *; }
--keepclassmembers class * {
-    @com.facebook.react.uimanager.annotations.ReactProp <methods>;
-}
+# Add project specific ProGuard rules here.
+# By default, the flags in this file are appended to flags specified
+# in /usr/local/Cellar/android-sdk/24.3.3/tools/proguard/proguard-android.txt
+# You can edit the include path and order by changing the proguardFiles
+# directive in build.gradle.
+#
+# For more details, see
+#   http://developer.android.com/guide/developing/tools/proguard.html
 
-# Preserve annotations
--keepattributes *Annotation*
-
-# Prevent stripping of dynamically referenced code
--keep class com.facebook.** { *; }
--keep class androidx.** { *; }
-
-# Avoid warnings
--dontwarn com.facebook.react.**
--dontwarn javax.annotation.**
--dontwarn okhttp3.**
--dontwarn okio.**
--dontwarn android.**
+# Add any project specific keep options here:
