@@ -35,8 +35,8 @@ export default function AddTask({onClose}) {
 
   // Convert UTC date to IST date
   function convertUTCtoIST(utcDate) {
-    const date = new Date(utcDate);
-    return new Date(date.getTime() + (5 * 60 + 30) * 60 * 1000); // Add 5 hours 30 minutes
+    const date = new Date(utcDate); // Create a Date object from the UTC date
+    return new Date(date.getTime() + date.getTimezoneOffset() * -60000);
   }
 
   // Map slider value to non-linear scale for "mon"
