@@ -34,7 +34,13 @@ export default function RegisterScreen({ navigation }) {
           ]
         );
       } else {
-        Alert.alert("Registration Failed", response.data.message || "Please try again.");
+        Alert.alert("Registration Successful", "You can now log in.",
+          [
+            {
+              text: "OK",
+              onPress: () => navigation.navigate('Login'), // Navigate after alert dismissal
+            }
+          ]);
       }
     } catch (error) {
       console.error('Registration error:', error);

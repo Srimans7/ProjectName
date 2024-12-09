@@ -34,7 +34,18 @@ function MyComponent() {
     return `${hours.toString().padStart(2, '0')}:${minutes} ${date.getUTCHours() >= 12 ? 'PM' : 'AM'}`;
   };
 
-  function Card({ time, task, id, status, images }) {
+  const formatDateWithMonthName = (isoDateString) => {
+    const date = new Date(isoDateString);
+    const day = date.getUTCDate().toString().padStart(2, '0');
+    const monthNames = [
+      "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+    ];
+    const month = monthNames[date.getUTCMonth()];
+    return `${day} ${month}`; // Return in "DD Month" format
+  };
+
+  function Card({ time, task, id, status, images, month }) {
     const [showModal, setShowModal] = useState(false);
     const [imageUri, setImageUri] = useState([]);
     const [img, setImg] = useState(images);
@@ -133,6 +144,7 @@ function MyComponent() {
           </View>
           <View style={status.startsWith('unver') ? styles.taskContainer2 : styles.taskContainer}>
             <Text style={styles.taskText}>{task}</Text>
+            <Text style={styles.taskText2}>{month}</Text>
             <TouchableOpacity onPress={() => setShowModal(true)}>
               <View style={styles.circle} />
             </TouchableOpacity>
@@ -163,8 +175,8 @@ function MyComponent() {
         {data
           .sort((a, b) => new Date(a.date) - new Date(b.date))
           .map((item, index) => (
-            item.status &&   item.status.startsWith('today') && (
-              <Card key={index} time={formatTime(item.date)} task={item.title} id={item._id} status={item.status} images={item.img} />
+            item.status &&  ( item.status.startsWith('today') || item.status == "undone")  && (
+              <Card key={index} time={formatTime(item.date)} month={formatDateWithMonthName(item.date)} task={item.title} id={item._id} status={item.status} images={item.img} />
             )
           ))}
       </ScrollView>
@@ -252,6 +264,12 @@ const styles = StyleSheet.create({
     color: "#009DCC",
     fontWeight: "600",
     fontSize: 24,
+  },
+  taskText2: {
+    color: "#000",
+    fontWeight: "600",
+    fontSize: 20,
+    top: 3,
   },
   modalContainer: {
     flex: 1,
