@@ -19,8 +19,10 @@ import {
   TouchableOpacity,
   StyleSheet,
   Dimensions,
-  Animated,
+  Animated,Alert, Platform
 } from 'react-native';
+import NotificationPrompt from './NotificationPrompt'; // Import the component
+import { check, request, openSettings, PERMISSIONS, RESULTS } from 'react-native-permissions';
 
 const Stack = createStackNavigator();
 
@@ -118,9 +120,46 @@ export default function App() {
     );
   }
 
+  useEffect(() => {
+    const checkNotificationPermission = async () => {
+      const permission =
+        Platform.OS === 'ios'
+          ? PERMISSIONS.IOS.NOTIFICATIONS
+          : PERMISSIONS.ANDROID.POST_NOTIFICATIONS;
+
+      const result = await check(permission);
+
+      if (result === RESULTS.DENIED) {
+        const requestResult = await request(permission);
+        if (requestResult !== RESULTS.GRANTED) {
+          Alert.alert(
+            'Enable Notifications',
+            'To stay updated, please enable notifications in your settings.',
+            [
+              { text: 'Cancel', style: 'cancel' },
+              { text: 'Open Settings', onPress: openSettings },
+            ]
+          );
+        }
+      } else if (result === RESULTS.BLOCKED) {
+        Alert.alert(
+          'Notifications Disabled',
+          'Notifications are disabled. Please enable them in your settings.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Open Settings', onPress: openSettings },
+          ]
+        );
+      }
+    };
+
+    checkNotificationPermission();
+  }, []);
+
   return (
     <Provider store={Store}>
     <PersistGate loading={null} persistor={persistor}>
+    <NotificationPrompt />
       <NavigationContainer>
         <Stack.Navigator
           screenOptions={{
