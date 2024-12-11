@@ -20,8 +20,8 @@ import {
   StyleSheet,
   Dimensions,
   Animated,Alert, Platform
-} from 'react-native';
-import NotificationPrompt from './NotificationPrompt'; // Import the component
+} from 'react-native'; 
+
 import { check, request, openSettings, PERMISSIONS, RESULTS } from 'react-native-permissions';
 
 const Stack = createStackNavigator();
