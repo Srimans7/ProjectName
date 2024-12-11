@@ -6,7 +6,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import HomeScreen from './page1';
 import LobbyScreen from './LobbyScreen';
 import RequestScreen from './RequestPage';
-import SecondScreen from './page2';
+import SecondScreen from './page3';
 import LoginScreen from './LoginScreen';
 import RegisterScreen from './RegisterScreen';
 import { Provider } from 'react-redux';
