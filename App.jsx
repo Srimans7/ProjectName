@@ -13,6 +13,8 @@ import { Provider } from 'react-redux';
 import { Store, persistor } from './redux/store';
 import { PersistGate } from 'redux-persist/integration/react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import messaging from '@react-native-firebase/messaging';
+
 import {
   View,
   Text,
@@ -23,6 +25,16 @@ import {
 } from 'react-native';
 
 const Stack = createStackNavigator();
+
+const saveFcmToken = async () => {
+  const token = await messaging().getToken();
+  console.log('FCM Token:', token);
+
+  // Save the token (e.g., send it to your server or save in AsyncStorage)
+  await AsyncStorage.setItem('fcmToken', token);
+};
+
+
 
 // Custom Sidebar Component
 const Sidebar = ({ navigation, toggleSidebar, onLogout }) => {
@@ -90,6 +102,21 @@ export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false); // Track login state
   const [loading, setLoading] = useState(true); // Track loading state for token check
 
+
+
+const requestNotificationPermission = async () => {
+  const authStatus = await messaging().requestPermission();
+  const enabled =
+    authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+    authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+
+  if (enabled) {
+    console.log('Notification permission granted.');
+  } else {
+    Alert.alert('Permission Required', 'Please enable notifications to use this feature.');
+  }
+};
+
   useEffect(() => {
     const checkLoginStatus = async () => {
       try {
@@ -104,6 +131,14 @@ export default function App() {
       }
     };
     checkLoginStatus();
+    requestNotificationPermission();
+    saveFcmToken();
+
+    // Listen for token refresh
+    return messaging().onTokenRefresh((newToken) => {
+      console.log('FCM Token Refreshed:', newToken);
+      saveFcmToken();
+    });
   }, []);
 
   const onLogout = () => {

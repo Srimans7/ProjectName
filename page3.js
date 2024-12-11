@@ -15,6 +15,8 @@ export default function HomeScreen({ navigation }) {
 
   const handleCloseModal = () => setShowModal(false);
 
+  
+
   return (
     <View // Your local background image
       style={styles.backgroundImage}
