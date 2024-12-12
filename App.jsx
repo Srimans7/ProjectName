@@ -14,7 +14,7 @@ import { Store, persistor } from './redux/store';
 import { PersistGate } from 'redux-persist/integration/react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import messaging from '@react-native-firebase/messaging';
-
+import api from './axiosService';
 import {
   View,
   Text,
@@ -28,10 +28,17 @@ const Stack = createStackNavigator();
 
 const saveFcmToken = async () => {
   const token = await messaging().getToken();
-  console.log('FCM Token:', token);
+  await api.post('/token', { token })
+  .then(response => {
+    console.log('Token update response:', response.data);
+  })
+  .catch(error => {
+    console.error('Error updating token:', error.response?.data || error.message);
+  });
 
   // Save the token (e.g., send it to your server or save in AsyncStorage)
   await AsyncStorage.setItem('fcmToken', token);
+ 
 };
 
 

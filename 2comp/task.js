@@ -156,11 +156,13 @@ function MyComponent() {
             )
           ))}
       </ScrollView>
-      <View style={styles.refreshContainer}>
+      
         <TouchableOpacity onPress={fetchTasks}>
+        <View style={styles.refreshContainer}>
         <Text style={styles.refreshButtonText}>🔄 Refresh</Text>
+        </View>
         </TouchableOpacity>
-      </View>
+     
     </View>
   );
 }
