@@ -14,12 +14,14 @@ import api from './axiosService';
 export default function UserList() {
   const [data, setData] = useState([]); // State to hold user data
   const [loading, setLoading] = useState(true); // State to handle loading indicator
+  const [refreshKey, setRefreshKey] = useState(0); // State for refreshing the list
 
   // Function to handle accepting a friend request
   const acceptFriendRequest = async (id) => {
     try {
       const response = await api.post(`/accept-request/${id}`);
       Alert.alert('Success', response.data.message);
+      setRefreshKey(refreshKey + 1); // Trigger a refresh after accepting a request
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Error accepting friend request';
       Alert.alert('Error', errorMessage);
@@ -36,6 +38,7 @@ export default function UserList() {
       } else {
         await api.post('/remove-friend');
         Alert.alert("Success", "Friend removed successfully.");
+        setRefreshKey(refreshKey + 1); // Trigger a refresh after removing a friend
       }
     } catch (error) {
       Alert.alert("Error", "Could not process your request.");
@@ -44,6 +47,7 @@ export default function UserList() {
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       try {
         const response = await api.get('/users-in-request');
         setData(response.data); // Save data to state
@@ -51,17 +55,16 @@ export default function UserList() {
         console.error('Error fetching data:', error);
         Alert.alert("Error", "Could not fetch user data.");
       } finally {
-        setLoading(false); // Hide loading indicator
+        setLoading(false);
       }
     };
 
     fetchData();
-  }, []);
+  }, [refreshKey]); // Re-fetch data when refreshKey changes
 
   const renderItem = ({ item }) => (
-    <View style={styles.item}>
+    <View style={styles.card}>
       <Text style={styles.username}>👤 {item.username}</Text>
-      
       <TouchableOpacity
         style={styles.requestButton}
         onPress={() => acceptFriendRequest(item._id)} // Trigger the accept friend request API
@@ -75,8 +78,16 @@ export default function UserList() {
     <SafeAreaView style={styles.background}>
       <View style={styles.container}>
         <Text style={styles.header}>Manage Friend Requests</Text>
+
+        <TouchableOpacity 
+          style={styles.refreshButton} 
+          onPress={() => setRefreshKey(refreshKey + 1)} // Trigger refresh
+        >
+          <Text style={styles.refreshButtonText}>🔄 Refresh List</Text>
+        </TouchableOpacity>
+
         {loading ? (
-          <ActivityIndicator size="large" color="#0090BC" />
+          <ActivityIndicator size="large" color="#FFBD00" />
         ) : (
           <FlatList
             data={data}
@@ -96,69 +107,84 @@ export default function UserList() {
 const styles = StyleSheet.create({
   background: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: '#F8F9FA',
   },
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
     padding: 20,
   },
   header: {
-    color: "#FFBD00",
+    color: "#333",
     fontSize: 28,
-    fontWeight: "600",
-    fontFamily: "Inter, sans-serif",
+    fontWeight: "700",
     textAlign: 'center',
     marginBottom: 20,
   },
-  list: {
-    paddingHorizontal: 16,
+  refreshButton: {
+    alignSelf: 'center',
+    backgroundColor: '#0090BC',
+    padding: 10,
+    borderRadius: 25,
+    marginBottom: 20,
+    paddingHorizontal: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
   },
-  item: {
-    backgroundColor: '#FFFFFF',
+  refreshButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  list: {
+    paddingVertical: 10,
+  },
+  card: {
+    backgroundColor: '#FFF',
     padding: 16,
     marginBottom: 12,
     borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#0090BC',
     shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 5,
+    shadowRadius: 3,
     elevation: 3,
   },
   username: {
     fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 5,
-    color: "#333",
-  },
-  email: {
-    fontSize: 14,
-    color: '#555',
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 10,
   },
   requestButton: {
-    backgroundColor: '#0090BC',
+    backgroundColor: '#FFBD00',
     padding: 12,
-    borderRadius: 5,
-    marginTop: 10,
+    borderRadius: 8,
     alignItems: 'center',
   },
   buttonText: {
-    color: '#fff',
+    color: '#FFF',
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
   removeButton: {
     backgroundColor: '#FF6F61',
     padding: 12,
-    borderRadius: 5,
+    borderRadius: 8,
     marginTop: 20,
     alignItems: 'center',
     alignSelf: 'center',
-    width: "60%",
+    width: '60%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 2,
   },
   removeButtonText: {
-    color: '#fff',
+    color: '#FFF',
     fontSize: 16,
     fontWeight: 'bold',
   },

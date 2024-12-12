@@ -6,7 +6,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import HomeScreen from './page1';
 import LobbyScreen from './LobbyScreen';
 import RequestScreen from './RequestPage';
-import SecondScreen from './page3';
+import SecondScreen from './page2';
 import LoginScreen from './LoginScreen';
 import RegisterScreen from './RegisterScreen';
 import { Provider } from 'react-redux';
@@ -40,9 +40,9 @@ const saveFcmToken = async () => {
 const Sidebar = ({ navigation, toggleSidebar, onLogout }) => {
   const handleLogout = async () => {
     try {
-      await AsyncStorage.removeItem('userToken'); // Clear token from storage
-      onLogout(); // Update the `isLoggedIn` state
-      navigation.navigate('Login'); // Navigate to the Login screen
+      await AsyncStorage.removeItem('userToken');
+      onLogout();
+      navigation.navigate('Login');
     } catch (error) {
       console.error('Error logging out:', error);
     }
@@ -51,26 +51,27 @@ const Sidebar = ({ navigation, toggleSidebar, onLogout }) => {
   return (
     <View style={styles.sidebar}>
       <TouchableOpacity onPress={toggleSidebar}>
-        <Text style={styles.closeButton}>X</Text>
+        <Text style={styles.closeButton}>✕</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={() => { toggleSidebar(); navigation.navigate('Home'); }}>
-        <Text style={styles.menuItem}>Home</Text>
+        <Text style={styles.menuItem}>🏠 Home</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={() => { toggleSidebar(); navigation.navigate('Lobby'); }}>
-        <Text style={styles.menuItem}>Lobby</Text>
+        <Text style={styles.menuItem}>🛋️ Lobby</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={() => { toggleSidebar(); navigation.navigate('Request'); }}>
-        <Text style={styles.menuItem}>Requests</Text>
+        <Text style={styles.menuItem}>📩 Requests</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={() => { toggleSidebar(); navigation.navigate('Second'); }}>
-        <Text style={styles.menuItem}>Friend's Task</Text>
+        <Text style={styles.menuItem}>👫 Friend's Task</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={handleLogout}>
-        <Text style={styles.menuItem}>Log out</Text>
+        <Text style={[styles.menuItem, styles.menuItemActive]}>🚪 Log out</Text>
       </TouchableOpacity>
     </View>
   );
 };
+
 
 // Wrapper Component for Screens with Sidebar
 const ScreenWithSidebar = ({ children, navigation, onLogout }) => {
@@ -178,7 +179,7 @@ const requestNotificationPermission = async () => {
                   <ScreenWithSidebar
                     navigation={props.navigation}
                     onLogout={onLogout}
-                    key={props.route?.key || 'Home'} // Add `key` to force re-render
+                    key={props.route?.key || 'Home'} // Add key to force re-render
                   >
                     <HomeScreen {...props} />
                   </ScreenWithSidebar>
@@ -189,7 +190,7 @@ const requestNotificationPermission = async () => {
                   <ScreenWithSidebar
                     navigation={props.navigation}
                     onLogout={onLogout}
-                    key={props.route?.key || 'Lobby'} // Add `key` to force re-render
+                    key={props.route?.key || 'Lobby'} // Add key to force re-render
                   >
                     <LobbyScreen {...props} />
                   </ScreenWithSidebar>
@@ -200,7 +201,7 @@ const requestNotificationPermission = async () => {
                   <ScreenWithSidebar
                     navigation={props.navigation}
                     onLogout={onLogout}
-                    key={props.route?.key || 'Request'} // Add `key` to force re-render
+                    key={props.route?.key || 'Request'} // Add key to force re-render
                   >
                     <RequestScreen {...props} />
                   </ScreenWithSidebar>
@@ -211,7 +212,7 @@ const requestNotificationPermission = async () => {
                   <ScreenWithSidebar
                     navigation={props.navigation}
                     onLogout={onLogout}
-                    key={props.route?.key || 'Second'} // Add `key` to force re-render
+                    key={props.route?.key || 'Second'} // Add key to force re-render
                   >
                     <SecondScreen {...props} />
                   </ScreenWithSidebar>
@@ -236,44 +237,53 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 0,
     bottom: 0,
-    width: Dimensions.get('window').width * 0.4, // Sidebar width (70% of screen width)
+    width: Dimensions.get('window').width * 0.5, // Sidebar width (70% of screen width)
     backgroundColor: '#0090BC', // Primary blue color
     zIndex: 1000,
     elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
   sidebar: {
     flex: 1,
-    paddingVertical: 16, // Equivalent to spacing.medium
+    paddingVertical: 16,
     paddingHorizontal: 16,
   },
   closeButton: {
-    fontSize: 18,
-    color: '#FFFFFF', // White text
+    fontSize: 24,
+    color: '#FFFFFF',
     textAlign: 'right',
-    marginBottom: 24, // Equivalent to spacing.large
+    marginBottom: 24,
   },
   menuItem: {
-    color: '#FFFFFF', // White text
-    fontSize: 16, // Body font size
-    fontWeight: '400', // Regular font weight
-    marginVertical: 8, // Equivalent to spacing.small
-    paddingHorizontal: 8,
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '500',
+    marginVertical: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    backgroundColor: '#0078A3', // Slightly darker blue for menu item background
+    textAlign: 'center',
+  },
+  menuItemActive: {
+    backgroundColor: '#005F7E', // Even darker blue for the active menu item
   },
   hamburgerButton: {
     position: 'absolute',
-    top: 24, // Equivalent to spacing.large
-    left: 16, // Equivalent to spacing.medium
+    top: 24,
+    left: 16,
     zIndex: 1100,
   },
   hamburgerText: {
-    fontSize: 24,
-    color: '#0090BC', // Primary blue color
+    fontSize: 28,
+    color: '#0090BC',
+    fontWeight: '700',
   },
   screenContent: {
     flex: 1,
-    backgroundColor: '#FFFFFF', // White background
-   
+    backgroundColor: '#F8F9FA', // Light background for content
   },
-});
-
-
+}); 

@@ -7,16 +7,17 @@ import {
   ActivityIndicator, 
   TouchableOpacity, 
   Alert, 
-  SafeAreaView 
+  SafeAreaView, 
+  Button 
 } from 'react-native';
 import api from './axiosService';
 
 export default function UserList() {
-  const [data, setData] = useState([]); // State to hold user data
-  const [friend, setFriend] = useState(null); // State to hold friend details
-  const [loading, setLoading] = useState(true); // State to handle loading indicator
+  const [data, setData] = useState([]);
+  const [friend, setFriend] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  // Function to handle sending friend request
   const sendFriendRequest = async (id) => {
     try {
       const response = await api.post(`/send-request/${id}`);
@@ -37,7 +38,7 @@ export default function UserList() {
       } else {
         await api.post('/remove-friend');
         Alert.alert("Success", "Friend removed successfully.");
-        setFriend(null); // Reset friend state
+        setFriend(null);
       }
     } catch (error) {
       Alert.alert("Error", "Could not process your request.");
@@ -46,14 +47,15 @@ export default function UserList() {
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       try {
         const response = await api.get('/users-without-friends');
-        setData(response.data); // Save data to state
+        setData(response.data);
       } catch (error) {
         console.error('Error fetching users:', error);
         Alert.alert("Error", "Could not fetch user data.");
       } finally {
-        setLoading(false); // Hide loading indicator
+        setLoading(false);
       }
 
       try {
@@ -65,15 +67,14 @@ export default function UserList() {
     };
 
     fetchData();
-  }, []);
+  }, [refreshKey]);
 
   const renderItem = ({ item }) => (
-    <View style={styles.item}>
+    <View style={styles.card}>
       <Text style={styles.username}>👤 {item.username}</Text>
-   
       <TouchableOpacity
         style={styles.requestButton}
-        onPress={() => sendFriendRequest(item._id)} // Trigger the friend request API
+        onPress={() => sendFriendRequest(item._id)}
       >
         <Text style={styles.buttonText}>Send Friend Request</Text>
       </TouchableOpacity>
@@ -83,13 +84,19 @@ export default function UserList() {
   return (
     <SafeAreaView style={styles.background}>
       <View style={styles.container}>
-        <Text style={styles.header}>Find and Connect with Users</Text>
+        <Text style={styles.header}>🤝 Find and Connect</Text>
+        <TouchableOpacity 
+          style={styles.refreshButton} 
+          onPress={() => setRefreshKey(refreshKey + 1)}
+        >
+          <Text style={styles.refreshButtonText}>🔄 Refresh</Text>
+        </TouchableOpacity>
         {loading ? (
-          <ActivityIndicator size="large" color="#0090BC" />
+          <ActivityIndicator size="large" color="#FFBD00" />
         ) : (
           <FlatList
             data={data}
-            keyExtractor={(item) => item._id} // Use _id as a unique key
+            keyExtractor={(item) => item._id}
             renderItem={renderItem}
             contentContainerStyle={styles.list}
           />
@@ -99,9 +106,8 @@ export default function UserList() {
           {friend ? (
             <> 
               <Text style={styles.friendText}>👤 {friend[0].username}</Text>
-             
               <TouchableOpacity style={styles.removeButton} onPress={handlePress}>
-                <Text style={styles.buttonText}>Remove Friend</Text>
+                <Text style={styles.removeButtonText}>Remove Friend</Text>
               </TouchableOpacity>
             </>
           ) : (
@@ -116,86 +122,102 @@ export default function UserList() {
 const styles = StyleSheet.create({
   background: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: '#F8F9FA',
   },
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
     padding: 20,
   },
   header: {
-    color: "#FFBD00",
     fontSize: 28,
-    fontWeight: "600",
-    fontFamily: "Inter, sans-serif",
+    fontWeight: '700',
+    color: '#333',
     textAlign: 'center',
     marginBottom: 20,
   },
-  list: {
-    paddingHorizontal: 16,
+  refreshButton: {
+    alignSelf: 'center',
+    backgroundColor: '#0090BC',
+    padding: 12,
+    borderRadius: 25,
+    marginBottom: 20,
+    paddingHorizontal: 20,
   },
-  item: {
-    backgroundColor: '#FFFFFF',
+  refreshButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  list: {
+    paddingVertical: 10,
+  },
+  card: {
+    backgroundColor: '#FFF',
     padding: 16,
-    marginBottom: 12,
     borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#0090BC',
+    marginBottom: 12,
     shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 3,
+    shadowRadius: 3,
+    elevation: 2,
   },
   username: {
     fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 5,
-    color: "#333",
-  },
-  email: {
-    fontSize: 14,
-    color: '#555',
+    fontWeight: '600',
+    color: '#333',
   },
   requestButton: {
-    backgroundColor: '#0090BC',
-    padding: 12,
-    borderRadius: 5,
     marginTop: 10,
+    backgroundColor: '#FFBD00',
+    padding: 10,
+    borderRadius: 8,
     alignItems: 'center',
   },
   buttonText: {
-    color: '#fff',
+    color: '#FFF',
+    fontWeight: '600',
     fontSize: 14,
-    fontWeight: 'bold',
   },
   friendContainer: {
     marginTop: 20,
     padding: 16,
-    borderRadius: 10,
-    backgroundColor: '#E8F8FF',
+    borderRadius: 12,
+    backgroundColor: '#FFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
     alignItems: 'center',
   },
   subHeader: {
-    fontSize: 22,
-    fontWeight: 'bold',
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#333',
     marginBottom: 10,
-    color: "#333",
   },
   friendText: {
     fontSize: 16,
-    color: '#007bff',
-    marginBottom: 5,
+    color: '#007BFF',
+    fontWeight: '600',
   },
   noFriendText: {
     fontSize: 16,
-    color: '#555',
+    color: '#888',
+    fontStyle: 'italic',
     textAlign: 'center',
   },
   removeButton: {
-    backgroundColor: '#FF6F61',
-    padding: 12,
-    borderRadius: 5,
     marginTop: 10,
+    backgroundColor: '#FF6F61',
+    padding: 10,
+    borderRadius: 8,
     alignItems: 'center',
+  },
+  removeButtonText: {
+    color: '#FFF',
+    fontWeight: '600',
+    fontSize: 14,
   },
 });

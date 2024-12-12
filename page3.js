@@ -1,8 +1,11 @@
 import React from 'react';
-import {useState} from 'react';
+import {useState, useEffect} from 'react';
 import { Alert, SafeAreaView, StyleSheet, Text, View, TouchableOpacity, ImageBackground, Button, Modal, Pressable } from 'react-native';
 import Nav from './components/nav';
 import Main from './2comp/main-card2';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import messaging from '@react-native-firebase/messaging';
+import axios from "axios";
 
 
 
@@ -15,7 +18,40 @@ export default function HomeScreen({ navigation }) {
 
   const handleCloseModal = () => setShowModal(false);
 
+
+
+  const handleButtonClick = async () => {
+    const token = await AsyncStorage.getItem('fcmToken');
+    try {
+      const response = await axios.post('http://10.0.2.2:3000/send-notification', {
+        friendToken: token,
+        title: 'Button Clicked!',
+        body: 'Your friend clicked the button! kk',
+      });
+      console.log('Notification sent:', response.data);
+    } catch (error) {
+      console.error('Error sending notification:', error);
+    }
+  };
+
+  const NotificationHandler = () => {
+    useEffect(() => {
+      // Handle foreground notifications
+      const unsubscribe = messaging().onMessage(async (remoteMessage) => {
+        Alert.alert('New Notification', remoteMessage.notification.title);
+      });
   
+      // Handle background notifications
+      messaging().setBackgroundMessageHandler(async (remoteMessage) => {
+        console.log('Notification received in background:', remoteMessage);
+        // You can perform additional background tasks here if needed
+      });
+  
+      return unsubscribe;
+    }, []);
+  
+    return null;
+  };
 
   return (
     <View // Your local background image
@@ -26,11 +62,16 @@ export default function HomeScreen({ navigation }) {
         <Nav />
         
         <View style={styles.line} />
+
         <Text style={styles.heading}>Tasks yet to be verified</Text>
         <View style={styles.main}>
           <Main />
 
         </View>
+        <TouchableOpacity onPress={handleButtonClick}>
+  <Text>Notify Friend</Text>
+  <NotificationHandler />
+</TouchableOpacity>
         
         <TouchableOpacity style={styles.footer} onPress={handlePress}/>
       </View>

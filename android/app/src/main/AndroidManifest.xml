@@ -23,7 +23,7 @@
                     <uses-library android:name="android.test.runner" />
         <meta-data  
             android:name="com.dieam.reactnativepushnotification.notification_foreground"
-            android:value="false"/>
+            android:value="true"/>
         <!-- Change the resource name to your App's accent color - or any other color you want -->
         <meta-data  
             android:name="com.dieam.reactnativepushnotification.notification_color"
@@ -31,11 +31,11 @@
 
         <receiver 
             android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationActions"
-            android:exported="false"/>
+            android:exported="true"/>
             
         <receiver 
             android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationPublisher"
-            android:exported="false"/>
+            android:exported="true"/>
             
         <receiver 
             android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationBootEventReceiver"
@@ -46,6 +46,12 @@
                 <action android:name="com.htc.intent.action.QUICKBOOT_POWERON" android:exported="true"/>
             </intent-filter>
         </receiver>
+
+         <service android:name="io.invertase.firebase.messaging.ReactNativeFirebaseMessagingService" android:exported="true" tools:replace="android:exported">
+        <intent-filter>
+            <action android:name="com.google.firebase.MESSAGING_EVENT" />
+        </intent-filter>
+    </service>
 
         <service
             android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationListenerService"
