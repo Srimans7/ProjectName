@@ -26,6 +26,17 @@ export default function UserList() {
       const errorMessage = error.response?.data?.message || 'Error accepting friend request';
       Alert.alert('Error', errorMessage);
     }
+
+    
+    try {
+     await api.post('/send-notification', {
+       
+        title: 'Friend Request',
+        body: 'Your Friend Request got accepted',
+      });
+    } catch (error) {
+      console.error('Error sending notification:', error);
+    }
   };
 
   async function handlePress() {
@@ -49,8 +60,8 @@ export default function UserList() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const response = await api.get('/users-in-request');
-        setData(response.data); // Save data to state
+        const response = await api.get('/tasks');
+        setData(response.data.friendRequests); // Save data to state
       } catch (error) {
         console.error('Error fetching data:', error);
         Alert.alert("Error", "Could not fetch user data.");

@@ -4,8 +4,7 @@ import { Alert, SafeAreaView, StyleSheet, Text, View, TouchableOpacity, ImageBac
 import Nav from './components/nav';
 import Main from './2comp/main-card2';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import messaging from '@react-native-firebase/messaging';
-import axios from "axios";
+import api from "./axiosService";
 
 
 
@@ -24,13 +23,13 @@ export default function HomeScreen({ navigation }) {
     const token = await AsyncStorage.getItem('fcmToken');
     console.log("token ",token)
     try {
-      const response = await axios.post('http://10.0.2.2:3000/send-notification', {
+      const response = await api.post('/send-notification', {
         friendToken: token,
         title: 'Button Clicked!',
         body: 'Your friend clicked the button! kk',
       });
     } catch (error) {
-      console.error('Error sending notification:', error);
+      console.error('Error sending notification:', error); 
     }
   };
 
