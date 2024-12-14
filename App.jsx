@@ -23,9 +23,33 @@ import {
   StyleSheet,
   Dimensions,
   Animated,
+  Platform, PermissionsAndroid
 } from 'react-native';
 
 const Stack = createStackNavigator();
+
+const requestAndroidNotificationPermission = async () => {
+  if (Platform.OS === 'android' && Platform.Version >= 33) {
+    const hasPermission = await PermissionsAndroid.check(
+      PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
+    );
+
+    if (!hasPermission) {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
+      );
+
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        console.log('POST_NOTIFICATIONS permission granted');
+        return true;
+      } else {
+        console.log('POST_NOTIFICATIONS permission denied');
+        return false;
+      }
+    }
+  }
+  return true; // For Android < 33, return true as permission is not required
+};
 
 const saveFcmToken = async () => {
   const token = await messaging().getToken();
@@ -127,6 +151,9 @@ const requestNotificationPermission = async () => {
 };
 
 useEffect(() => {
+
+ 
+
   const unsubscribe = messaging().onMessage(async (remoteMessage) => {
     Alert.alert(
       remoteMessage.notification.title,
@@ -135,6 +162,22 @@ useEffect(() => {
   });
 
   return unsubscribe;
+}, []);
+
+useEffect(() => {
+  const initializeNotifications = async () => {
+    try {
+      // Request notification permission for Android 13+
+      const androidPermission = await requestAndroidNotificationPermission();
+      if (!androidPermission) return;
+
+     
+    } catch (error) {
+      console.error('Error initializing notifications:', error);
+    }
+  };
+
+  initializeNotifications();
 }, []);
 
   useEffect(() => {
