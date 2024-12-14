@@ -22,35 +22,20 @@ export default function HomeScreen({ navigation }) {
 
   const handleButtonClick = async () => {
     const token = await AsyncStorage.getItem('fcmToken');
+    console.log("token ",token)
     try {
       const response = await axios.post('http://10.0.2.2:3000/send-notification', {
         friendToken: token,
         title: 'Button Clicked!',
         body: 'Your friend clicked the button! kk',
       });
-      console.log('Notification sent:', response.data);
     } catch (error) {
       console.error('Error sending notification:', error);
     }
   };
 
   const NotificationHandler = () => {
-    useEffect(() => {
-      // Handle foreground notifications
-      const unsubscribe = messaging().onMessage(async (remoteMessage) => {
-        Alert.alert('New Notification', remoteMessage.notification.title);
-      });
-  
-      // Handle background notifications
-      messaging().setBackgroundMessageHandler(async (remoteMessage) => {
-        console.log('Notification received in background:', remoteMessage);
-        // You can perform additional background tasks here if needed
-      });
-  
-      return unsubscribe;
-    }, []);
-  
-    return null;
+    
   };
 
   return (

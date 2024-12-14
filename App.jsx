@@ -6,7 +6,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import HomeScreen from './page1';
 import LobbyScreen from './LobbyScreen';
 import RequestScreen from './RequestPage';
-import SecondScreen from './page2';
+import SecondScreen from './page3';
 import LoginScreen from './LoginScreen';
 import RegisterScreen from './RegisterScreen';
 import { Provider } from 'react-redux';
@@ -18,6 +18,7 @@ import api from './axiosService';
 import {
   View,
   Text,
+  Alert,
   TouchableOpacity,
   StyleSheet,
   Dimensions,
@@ -124,6 +125,17 @@ const requestNotificationPermission = async () => {
     Alert.alert('Permission Required', 'Please enable notifications to use this feature.');
   }
 };
+
+useEffect(() => {
+  const unsubscribe = messaging().onMessage(async (remoteMessage) => {
+    Alert.alert(
+      remoteMessage.notification.title,
+      remoteMessage.notification.body
+    );
+  });
+
+  return unsubscribe;
+}, []);
 
   useEffect(() => {
     const checkLoginStatus = async () => {
