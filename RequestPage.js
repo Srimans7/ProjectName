@@ -60,8 +60,8 @@ export default function UserList() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const response = await api.get('/tasks');
-        setData(response.data.friendRequests); // Save data to state
+        const response = await api.get('/users-in-request');
+        setData(response.data); // Save data to state
       } catch (error) {
         console.error('Error fetching data:', error);
         Alert.alert("Error", "Could not fetch user data.");
