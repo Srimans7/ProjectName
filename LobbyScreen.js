@@ -8,7 +8,9 @@ import {
   TouchableOpacity, 
   Alert, 
   SafeAreaView, 
-  Button 
+  Button,
+  Modal, 
+  TextInput
 } from 'react-native';
 import api from './axiosService';
 
@@ -17,7 +19,9 @@ export default function UserList() {
   const [friend, setFriend] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
-
+  const [bioModalVisible, setBioModalVisible] = useState(false); // Modal visibility state
+  const [newBio, setNewBio] = useState('');
+  
   const sendFriendRequest = async (id) => {
     try {
       const response = await api.post(`/send-request/${id}`);
@@ -51,11 +55,14 @@ export default function UserList() {
       try {
         const response = await api.get('/users-without-friends');
         setData(response.data);
+        const res = await api.get('/bio');
+        setNewBio(res.data.bio);
+        console.log("setNewBio",newBio); 
       } catch (error) {
         console.error('Error fetching users:', error);
         Alert.alert("Error", "Could not fetch user data.");
       } finally {
-        setLoading(false);
+        setLoading(false); 
       }
 
       try {
@@ -80,6 +87,16 @@ export default function UserList() {
       </TouchableOpacity>
     </View>
   );
+  const handleAddBio = async () => {
+    try {
+      await api.put('/bio', { bio: newBio });
+      Alert.alert('Success', 'Bio updated successfully!');
+      setBioModalVisible(false);
+    
+    } catch (error) {
+      Alert.alert('Error', error.message);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.background}>
@@ -114,6 +131,47 @@ export default function UserList() {
             <Text style={styles.noFriendText}>You have no friends added.</Text>
           )}
         </View>
+        <TouchableOpacity 
+          style={styles.bioButton} 
+          onPress={() => setBioModalVisible(true)}
+        >
+          <Text style={styles.bioButtonText}>Update Bio</Text>
+        </TouchableOpacity>
+
+        {/* Modal for Bio Update */}
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={bioModalVisible}
+          onRequestClose={() => setBioModalVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalHeader}>Update Your Bio</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter your bio"
+                placeholderTextColor="#999"
+                value={newBio}
+                onChangeText={setNewBio}
+              />
+              <View style={styles.modalButtons}>
+                <TouchableOpacity 
+                  style={styles.modalButtonCancel} 
+                  onPress={() => setBioModalVisible(false)}
+                >
+                  <Text style={styles.modalButtonText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.modalButtonSave} 
+                  onPress={handleAddBio}
+                >
+                  <Text style={styles.modalButtonText}>Save</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+            </View>
+            </Modal>
       </View>
     </SafeAreaView>
   );
@@ -219,5 +277,68 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontWeight: '600',
     fontSize: 14,
+  },bioButton: {
+    backgroundColor: '#0078A3',
+    padding: 12,
+    borderRadius: 25,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  bioButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: '#FFF',
+    padding: 20,
+    borderRadius: 12,
+    width: '80%',
+    alignItems: 'center',
+  },
+  modalHeader: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 15,
+  },
+  input: {
+    width: '100%',
+    borderWidth: 1,
+    borderColor: '#DDD',
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 20,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  modalButtonCancel: {
+    backgroundColor: '#FF6F61',
+    padding: 10,
+    borderRadius: 8,
+    flex: 1,
+    marginRight: 5,
+    alignItems: 'center',
+  },
+  modalButtonSave: {
+    backgroundColor: '#0090BC',
+    padding: 10,
+    borderRadius: 8,
+    flex: 1,
+    marginLeft: 5,
+    alignItems: 'center',
+  },
+  modalButtonText: {
+    color: '#FFF',
+    fontWeight: 'bold',
   },
 });
+
