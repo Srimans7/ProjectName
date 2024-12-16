@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState , useEffect} from 'react';
 import { 
   View, 
   Text, 
@@ -9,10 +9,27 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from './axiosService';
+import messaging from '@react-native-firebase/messaging';
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+
+  const saveFcmToken = async () => {
+    const token = await messaging().getToken();
+    await api.post('/token', { token })
+    .then(response => {
+      console.log('Token update response:', response.data);
+    })
+    .catch(error => {
+      console.error('Error updating token:', error.response?.data || error.message);
+    });
+  
+    // Save the token (e.g., send it to your server or save in AsyncStorage)
+    await AsyncStorage.setItem('fcmToken', token);
+   
+  };
 
   const handleLogin = async () => {
     try {
@@ -24,6 +41,7 @@ export default function LoginScreen({ navigation }) {
 
       if (token) {
         await AsyncStorage.setItem('userToken', token);
+        saveFcmToken();
         navigation.replace('Home');
       } else {
         Alert.alert('Login Failed', 'Invalid email or password. Please try again.');
@@ -33,6 +51,9 @@ export default function LoginScreen({ navigation }) {
       Alert.alert('Error', 'An error occurred while logging in. Please try again.');
     }
   };
+
+ 
+
 
   return (
     <View style={styles.container}>
