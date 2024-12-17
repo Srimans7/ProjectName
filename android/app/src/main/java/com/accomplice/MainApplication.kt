@@ -1,4 +1,4 @@
-package com.projectname
+package com.accomplice
 import android.os.Build 
 import android.app.Application
 import android.app.NotificationChannel;
