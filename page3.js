@@ -52,10 +52,7 @@ export default function HomeScreen({ navigation }) {
           <Main />
 
         </View>
-        <TouchableOpacity onPress={handleButtonClick}>
-  <Text>Notify Friend</Text>
-  <NotificationHandler />
-</TouchableOpacity>
+        
         
         <TouchableOpacity style={styles.footer} onPress={handlePress}/>
       </View>

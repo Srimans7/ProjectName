@@ -6,7 +6,8 @@ import { createStackNavigator } from '@react-navigation/stack';
 import HomeScreen from './page1';
 import LobbyScreen from './LobbyScreen';
 import RequestScreen from './RequestPage';
-import SecondScreen from './page3';
+import SecondScreen from './page2';
+import ThirdScreen from './page3';
 import LoginScreen from './LoginScreen';
 import RegisterScreen from './RegisterScreen';
 import { Provider } from 'react-redux';
@@ -96,6 +97,9 @@ const Sidebar = ({ navigation, toggleSidebar, onLogout }) => {
       </TouchableOpacity>
       <TouchableOpacity onPress={() => { toggleSidebar(); navigation.navigate('Second'); }}>
         <Text style={styles.menuItem}>👫 Friend's Task</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => { toggleSidebar(); navigation.navigate('Third'); }}>
+        <Text style={styles.menuItem}> unverfied Task</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={handleLogout}>
         <Text style={[styles.menuItem, styles.menuItemActive]}>🚪 Log out</Text>
@@ -277,6 +281,17 @@ useEffect(() => {
                     key={props.route?.key || 'Second'} // Add key to force re-render
                   >
                     <SecondScreen {...props} />
+                  </ScreenWithSidebar>
+                )}
+              </Stack.Screen>
+              <Stack.Screen name="Third">
+                {(props) => (
+                  <ScreenWithSidebar
+                    navigation={props.navigation}
+                    onLogout={onLogout}
+                    key={props.route?.key || 'Third'} // Add key to force re-render
+                  >
+                    <ThirdScreen {...props} />
                   </ScreenWithSidebar>
                 )}
               </Stack.Screen>
